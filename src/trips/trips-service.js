@@ -52,7 +52,7 @@ const TripsService = {
 			.where('t.id', trip_id);
 	},
 
-	async getTripsByUser(db, user_id) {
+	getTripsByUser(db, user_id) {
 		const resTrips = this.getAllTrips(db)
 			.where('u.id', user_id);
 
@@ -115,9 +115,6 @@ const TripsService = {
 		const tripTree = new Treeize();
 		const destCitiesTree = new Treeize();
 
-		// Some light hackiness to allow for the fact that `treeize`
-		// only accepts arrays of objects, and we want to use a single
-		// object.
 		const tripData = tripTree.grow([ trip ]).getData()[0];
 		const destCitiesData = destCitiesTree.grow(destCities).getData();
 
@@ -129,14 +126,8 @@ const TripsService = {
 			description: xss(tripData.description),
 			user_id: tripData.user_id,
 			dest_cities: destCitiesData
-		}
+		};
 	}
 }
-
-const userFields = [
-	'u.id AS user_id',
-	'u.email AS user_email',
-	'u.user_name AS user_name'
-];
 
 module.exports = TripsService;

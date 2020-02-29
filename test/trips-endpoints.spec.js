@@ -27,13 +27,13 @@ describe('Trips Endpoints', () => {
 
 	afterEach('cleanup', () => helpers.cleanTables(db))
 
-	describe(`GET /api/trips/:user_id`, () => {
+	describe(`GET /api/trips`, () => {
 		context(`Given no trips`, () => {
 			beforeEach('insert users', () => helpers.seedUsers(db, testUsers))
 
 			it('responds with 200 and an empty list', () => {
 				return supertest(app)
-					.get(`/api/trips/${testUser.id}`)
+					.get('/api/trips')
 					.set('Authorization', helpers.makeAuthHeader(testUser))
 					.expect(200, []);
 			})
@@ -61,21 +61,21 @@ describe('Trips Endpoints', () => {
 				);
 				
 				return supertest(app)
-					.get(`/api/trips/${testUser.id}`)
+					.get(`/api/trips`)
 					.set('Authorization', helpers.makeAuthHeader(testUser))
 					.expect(200, expectedTrips);
 			})
 		})
 	})
 
-	describe(`GET /api/trips/:user_id/:trip_id`, () => {
+	describe(`GET /api/trips/:trip_id`, () => {
 		context(`Given no trips`, () => {
 			beforeEach('insert users', () => helpers.seedUsers(db, testUsers))
 
 			it('responds with 404', () => {
 				const tripId = 123456;
 				return supertest(app)
-					.get(`/api/trips/${testUser}/${tripId}`)
+					.get(`/api/trips/${tripId}`)
 					.set('Authorization', helpers.makeAuthHeader(testUser))
 					.expect(404, { error: `Trip doesn't exist` });
 			})
@@ -99,7 +99,7 @@ describe('Trips Endpoints', () => {
 				)
 
 				return supertest(app)
-					.get(`/api/trips/${testUser}/${tripId}`)
+					.get(`/api/trips/${tripId}`)
 					.set('Authorization', helpers.makeAuthHeader(testUser))
 					.expect(200, expectedTrip);
 			})
@@ -211,7 +211,7 @@ describe('Trips Endpoints', () => {
 					expect(res.body.end_date).to.eql(newTrip.end_date);
 					expect(res.body.description).to.eql(newTrip.description);
 					expect(res.body.user_id).to.eql(testUser.id);
-					expect(res.headers.location).to.eql(`/api/trips/${testUser.id}/${res.body.id}`);
+					expect(res.headers.location).to.eql(`/api/trips/${res.body.id}`);
 				})
 				.expect(res => {
 					db

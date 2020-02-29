@@ -30,7 +30,7 @@ VALUES
 
 INSERT INTO trip_plans (plan_type, plan_name, plan_place_id, start_date, end_date, description, trip_id, trip_dest_city_id)
 VALUES
-	('Flight', 'BR772', '', '2019-04-01T04:05:00.000+08:00', '2019-04-01T10:50:00.000+03:00', NULL, 1, NULL),
+	('Flight', 'BR772', '', '2019-04-01T04:05:00.000+08:00', '2019-04-01T10:50:00.000+03:00', NULL, 1, 1),
 	('Lodging', 'H10 Metropolitan Hotel', '', '2019-04-01T13:00:00.000+03:00', '2019-04-05T09:00:00.000+03:00', NULL, 1, 1),
 	('Activity', 'La Sagrada Familia', '', '2019-04-02T10:00:00.000+03:00', '2019-04-02T14:00:00.000+03:00', 'Gaudis masterpiece', 1, 1),
 	('Restaurant', 'Lily Afternoon Tea', '', '2019-04-02T15:00:00.000+03:00', NULL, NULL, 1, 1),

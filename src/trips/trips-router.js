@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const TripsService = require('./trips-service');
+const PlansService = require('../plans/plans-service');
 const { requireAuth } = require('../middleware/jwt-auth');
 
 const TripsRouter = express.Router();
@@ -9,6 +10,21 @@ const jsonBodyParser = express.json();
 TripsRouter
 	.route('/')
 	.all(requireAuth)
+
+	.get((req, res, next) => {
+		TripsService.getTripsByUser(
+			req.app.get('db'),
+			req.user.id
+		)
+			.then(([trips, destCities]) => {
+				res.json(TripsService.serializeTrips(
+					trips,
+					TripsService.mapDestCities(destCities)
+				));
+			})
+			.catch(next);
+	})
+
 	.post(jsonBodyParser, (req, res, next) => {
 		const { trip_name, dest_cities, start_date, end_date, description } = req.body;
 		const newTrip = { trip_name, start_date, end_date };
@@ -48,34 +64,50 @@ TripsRouter
 			.then(([trip, destCities]) => {
 				res
 					.status(201)
-					.location(path.posix.join(req.originalUrl, `/${trip.user_id}/${trip.id}`))
+					.location(path.posix.join(req.originalUrl, `/${trip.id}`))
 					.json(TripsService.serializeTrip(trip, destCities));
 			})
 			.catch(next);
 	})
 
 TripsRouter
-	.route('/:user_id')
-	.all(requireAuth)
-	.get((req, res) => {
-		TripsService.getTripsByUser(
-			req.app.get('db'),
-			req.params.user_id
-		)
-			.then(([trips, destCities]) => {
-				res.json(TripsService.serializeTrips(
-					trips,
-					TripsService.mapDestCities(destCities)
-				));
-			});
-	})
-
-TripsRouter
-	.route('/:user_id/:trip_id')
+	.route('/:trip_id')
 	.all(requireAuth)
 	.all(checkTripExists)
 	.get((req, res) => {
 		res.json(TripsService.serializeTrip(res.trip, res.dest_cities));
+	})
+
+TripsRouter
+	.route('/:trip_id/plans')
+	.all(requireAuth)
+	.all(checkTripExists)
+	.get((req, res, next) => {
+		PlansService.getPlansForTrip(
+			req.app.get('db'),
+			req.params.trip_id
+		)
+		.then(plans => {
+			res.json(PlansService.serializePlans(plans));
+		})
+		.catch(next);
+	})
+
+TripsRouter
+	.route('/:trip_id/plans/:plan_id')
+	.all(requireAuth)
+	.all(checkTripExists)
+	.get((req, res, next) => {
+		PlansService.getPlanById(
+			req.app.get('db'),
+			req.params.plan_id
+		)
+		.then(plan => {
+			console.log(plan);
+			
+			res.json(PlansService.serializePlan(plan));
+		})
+		.catch(next);
 	})
 
 async function checkTripExists(req, res, next) {
