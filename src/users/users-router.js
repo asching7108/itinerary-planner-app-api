@@ -2,10 +2,10 @@ const express = require('express');
 const path = require('path');
 const UsersService = require('./users-service');
 
-const usersRouter = express.Router();
+const UsersRouter = express.Router();
 const jsonBodyParser = express.json();
 
-usersRouter
+UsersRouter
 	.post('/', jsonBodyParser, (req, res, next) => {
 		const { email, password, user_name } = req.body;
 		const regUser = { email, password, user_name };
@@ -60,4 +60,4 @@ usersRouter
 			.catch(next);
 	})
 
-module.exports = usersRouter;
+module.exports = UsersRouter;

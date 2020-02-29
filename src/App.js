@@ -4,8 +4,9 @@ const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
 const { NODE_ENV, CLIENT_ORIGIN } = require('./config');
-const authRouter = require('./auth/auth-router');
-const usersRouter = require('./users/users-router');
+const AuthRouter = require('./auth/auth-router');
+const TripsRouter = require('./trips/trips-router');
+const UsersRouter = require('./users/users-router');
 
 const app = express();
 
@@ -19,8 +20,9 @@ app.use(cors({
 	orogin: CLIENT_ORIGIN
 }));
 
-app.use('/api/auth', authRouter);
-app.use('/api/users', usersRouter);
+app.use('/api/auth', AuthRouter);
+app.use('/api/trips', TripsRouter);
+app.use('/api/users', UsersRouter);
 
 /* error handler */
 app.use((error, req, res, next) => {
