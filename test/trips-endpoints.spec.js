@@ -1,5 +1,4 @@
 const knex = require('knex');
-const moment = require('moment');
 const app = require('../src/App');
 const helpers = require('./test-helpers');
 
@@ -10,6 +9,7 @@ describe('Trips Endpoints', () => {
 		testUsers,
 		testTrips,
 		testDestCities,
+		testPlans
 	} = helpers.makeTripsFixtures();
 	const testUser = testUsers[0];
 
@@ -45,7 +45,8 @@ describe('Trips Endpoints', () => {
 					db,
 					testUsers,
 					testTrips,
-					testDestCities
+					testDestCities,
+					testPlans
 				)
 			)
 
@@ -72,7 +73,7 @@ describe('Trips Endpoints', () => {
 		context(`Given no trips`, () => {
 			beforeEach('insert users', () => helpers.seedUsers(db, testUsers))
 
-			it('responds with 404', () => {
+			it(`responds with 404 when trip doesn't exist`, () => {
 				const tripId = 123456;
 				return supertest(app)
 					.get(`/api/trips/${tripId}`)
@@ -87,7 +88,8 @@ describe('Trips Endpoints', () => {
 					db,
 					testUsers,
 					testTrips,
-					testDestCities
+					testDestCities,
+					testPlans
 				)
 			)
 
@@ -107,77 +109,69 @@ describe('Trips Endpoints', () => {
 	})
 
 	describe(`POST /api/trips`, () => {
-		beforeEach('insert trips', () => 
-			helpers.seedTripsTables(
-				db,
-				testUsers,
-				testTrips,
-				testDestCities
-			)
-		)
+		beforeEach('insert users', () => helpers.seedUsers(db, testUsers))
 
 		const requiredFields = ['trip_name', 'start_date', 'end_date', 'dest_cities'];
 
-    requiredFields.forEach(field => {
-      const newTrip = {
+		requiredFields.forEach(field => {
+			const newTrip = {
 				trip_name: 'Test New Trip',
 				dest_cities: [
 					{
 						city_name: 'New York',
-						city_place_id: ''
-					},
-					{
-						city_name: 'Philadelphia',
-						city_place_id: ''
+						city_place_id: '123456',
+						utc_offset_minutes: -240
 					}
 				],
 				start_date: '2020-07-01T00:00:00.000Z',
 				end_date: '2020-07-03T00:00:00.000Z'
-      };
+			};
 
-      it(`responds with 400 error when the '${field}' is missing`, () => {
-        delete newTrip[field];
+			it(`responds with 400 error when the '${field}' is missing`, () => {
+				delete newTrip[field];
 
-        return supertest(app)
-          .post('/api/trips')
-          .set('Authorization', helpers.makeAuthHeader(testUser))
-          .send(newTrip)
-          .expect(400, {
-            error: `Missing '${field}' in request body`,
-          })
+				return supertest(app)
+					.post('/api/trips')
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.send(newTrip)
+					.expect(400, {
+						error: `Missing '${field}' in request body`,
+					})
 			})
 		})
 
-		const requiredFieldsDestCities = ['city_name', 'city_place_id'];
+		const requiredFieldsDestCities = ['city_name', 'city_place_id', 'utc_offset_minutes'];
 
-    requiredFieldsDestCities.forEach(field => {
-      const newTrip = {
+		requiredFieldsDestCities.forEach(field => {
+			const newTrip = {
 				trip_name: 'Test New Trip',
 				dest_cities: [
 					{
 						city_name: 'New York',
-						city_place_id: '123'
+						city_place_id: '123456',
+						utc_offset_minutes: -240
 					},
 					{
 						city_name: 'Philadelphia',
-						city_place_id: '321'
+						city_place_id: '654321',
+						utc_offset_minutes: -240
 					}
 				],
 				start_date: '2020-07-01T00:00:00.000Z',
 				end_date: '2020-07-03T00:00:00.000Z'
-      };
+			};
 
-      it(`responds with 400 error when '${field}' of any 'dest_cities' item is missing`, () => {
+			it(`responds with 400 error when '${field}' is missing`, () => {
 				const testIdx = 1;
-				delete newTrip.dest_cities[testIdx][field];				
+				delete newTrip.dest_cities[testIdx][field];
 
-        return supertest(app)
-          .post('/api/trips')
-          .set('Authorization', helpers.makeAuthHeader(testUser))
-          .send(newTrip)
-          .expect(400, {
-            error: `Missing '${field}' of 'dest_cities[${testIdx}]' in request body`,
-          })
+				return supertest(app)
+					.post('/api/trips')
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.send(newTrip)
+					.expect(400, {
+						error: `Missing '${field}' in request body`,
+					})
 			})
 		})
 
@@ -187,11 +181,13 @@ describe('Trips Endpoints', () => {
 				dest_cities: [
 					{
 						city_name: 'New York',
-						city_place_id: '123'
+						city_place_id: '123456',
+						utc_offset_minutes: -240
 					},
 					{
 						city_name: 'Philadelphia',
-						city_place_id: '321'
+						city_place_id: '654321',
+						utc_offset_minutes: -240
 					}
 				],
 				start_date: '2020-07-01T00:00:00.000Z',
@@ -230,6 +226,127 @@ describe('Trips Endpoints', () => {
 							expect(actualDate).to.eql(expectDate);
 						})
 				})
+		})
+	})
+
+	describe(`GET /api/trips/:trip_id/plans`, () => {
+		context(`Given no trips`, () => {
+			beforeEach('insert users', () => helpers.seedUsers(db, testUsers))
+
+			it(`responds with 404 when trip doesn't exist`, () => {
+				const tripId = 123456;
+				return supertest(app)
+					.get(`/api/trips/${tripId}/plans`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Trip doesn't exist` });
+			})
+		})
+
+		context(`Given no plans for the trip`, () => {
+			beforeEach('insert trips', () => 
+				helpers.seedTripsTables(
+					db,
+					testUsers,
+					testTrips,
+					testDestCities,
+					testPlans
+				)
+			)
+
+			it('responds with 200 and an empty list', () => {
+				const tripId = 2;
+				return supertest(app)
+					.get(`/api/trips/${tripId}/plans`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(200, []);
+			})
+		})
+
+		context('Given there are plans for the trip in the database', () => {
+			beforeEach('insert trips', () => 
+				helpers.seedTripsTables(
+					db,
+					testUsers,
+					testTrips,
+					testDestCities,
+					testPlans
+				)
+			)
+
+			it('responds with 200 and the specified plans', () => {
+				const tripId = 1;
+				const expectedPlans = helpers.makeExpectedPlans(
+					tripId, 
+					testDestCities, 
+					testPlans
+				);
+
+				return supertest(app)
+				.get(`/api/trips/${tripId}/plans`)
+				.set('Authorization', helpers.makeAuthHeader(testUser))
+				.expect(200, expectedPlans);
+			})
+		})
+	})
+
+	describe(`GET /api/trips/:trip_id/plans/:plan_id`, () => {
+		context(`Given no trips`, () => {
+			beforeEach('insert users', () => helpers.seedUsers(db, testUsers))
+
+			it(`responds with 404 when trip doesn't exist`, () => {
+				const tripId = 123456;
+				const planId = 2;
+				return supertest(app)
+					.get(`/api/trips/${tripId}/plans/${planId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Trip doesn't exist` });
+			})
+		})
+
+		context(`Given no plans for the trip`, () => {
+			beforeEach('insert trips', () => 
+				helpers.seedTripsTables(
+					db,
+					testUsers,
+					testTrips,
+					testDestCities,
+					testPlans
+				)
+			)
+
+			it(`responds with 404 when plan doesn't exist`, () => {
+				const tripId = 1;
+				const planId = 123456;
+				return supertest(app)
+					.get(`/api/trips/${tripId}/plans/${planId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Plan doesn't exist` });
+			})
+		})
+
+		context('Given there are plans for the trip in the database', () => {
+			beforeEach('insert trips', () => 
+				helpers.seedTripsTables(
+					db,
+					testUsers,
+					testTrips,
+					testDestCities,
+					testPlans
+				)
+			)
+
+			it('responds with 200 and the specified plan', () => {
+				const testPlan = testPlans[0];
+				const expectedPlan = helpers.makeExpectedPlan(
+					testPlan, 
+					testDestCities
+				);
+
+				return supertest(app)
+				.get(`/api/trips/${testPlan.trip_id}/plans/${testPlan.id}`)
+				.set('Authorization', helpers.makeAuthHeader(testUser))
+				.expect(200, expectedPlan);
+			})
 		})
 	})
 })

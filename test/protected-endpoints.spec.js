@@ -33,7 +33,32 @@ describe('Protected endpoints', () => {
 
 	const protectedEndpoints = [
 		{
-			name: 'POST /api/auth/regresh',
+			name: 'GET /api/trips',
+			path: '/api/trips',
+			method: supertest(app).get,
+		},
+		{
+			name: 'POST /api/trips',
+			path: '/api/trips',
+			method: supertest(app).post,
+		},
+		{
+			name: 'GET /api/trips/:trip_id/plans',
+			path: '/api/trips/1/plans',
+			method: supertest(app).get,
+		},
+		{
+			name: 'GET /api/trips/:trip_id/plans/:plan_id',
+			path: '/api/trips/1/plans/1',
+			method: supertest(app).get,
+		},
+		{
+			name: 'POST /api/plans',
+			path: '/api/plans',
+			method: supertest(app).post,
+		},
+		{
+			name: 'POST /api/auth/refresh',
 			path: '/api/auth/refresh',
 			method: supertest(app).post,
 		}

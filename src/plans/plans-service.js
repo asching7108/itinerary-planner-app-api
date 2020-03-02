@@ -8,7 +8,6 @@ const PlansService = {
 			.select(
 				'tp.id',
 				'tp.plan_type',
-				'tp.plan_sub_type',
 				'tp.plan_name',
 				'tp.plan_place_id',
 				'tp.start_date',
@@ -16,7 +15,8 @@ const PlansService = {
 				'tp.description',
 				'tp.trip_id',
 				'tp.trip_dest_city_id',
-				'dc.city_name'
+				'dc.city_name',
+				'dc.utc_offset_minutes'
 			)
 			.innerJoin(
 				'trips AS t',
@@ -63,7 +63,6 @@ const PlansService = {
 		return {
 			id: planData.id,
 			plan_type: planData.plan_type,
-			plan_sub_type: planData.plan_sub_type,
 			plan_name: xss(planData.plan_name),
 			plan_place_id: planData.plan_place_id,
 			start_date: planData.start_date,
@@ -71,7 +70,8 @@ const PlansService = {
 			description: xss(planData.description),
 			trip_id: planData.trip_id,
 			trip_dest_city_id: planData.trip_dest_city_id,
-			city_name: planData.city_name
+			city_name: planData.city_name,
+			utc_offset_minutes: planData.utc_offset_minutes
 		};
 	}
 }

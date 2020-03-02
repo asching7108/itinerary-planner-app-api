@@ -14,6 +14,7 @@ CREATE TABLE trip_dest_cities (
 	id SERIAL PRIMARY KEY,
 	city_name TEXT NOT NULL,
 	city_place_id TEXT NOT NULL,
+	utc_offset_minutes INTEGER NOT NULL,
 	trip_id INTEGER
 		REFERENCES trips(id) ON DELETE CASCADE NOT NULL
 );

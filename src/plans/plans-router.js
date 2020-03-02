@@ -12,7 +12,6 @@ PlansRouter
   .post(jsonBodyParser, (req, res, next) => {
 		const { 
 			plan_type, 
-			plan_sub_type, 
 			plan_name, 
 			start_date, 
 			end_date, 
@@ -31,7 +30,6 @@ PlansRouter
 		}
 
 		newPlan = {
-			plan_sub_type,
 			end_date,
 			description,
 			...newPlan
@@ -44,7 +42,7 @@ PlansRouter
 			.then(plan => {
 				res
 					.status(201)
-					.location(path.posix.join(req.originalUrl, `/${plan.trip_id}/plans/${plan.id}`))
+					.location(`/api/trips/${plan.trip_id}/plans/${plan.id}`)
 					.json(PlansService.serializePlan(plan));
 			})
 			.catch(next);

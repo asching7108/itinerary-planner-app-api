@@ -43,15 +43,15 @@ TripsRouter
 			});
 		}
 
-		dest_cities.forEach((ele, idx) => {
-			['city_name', 'city_place_id'].forEach((field) => {
-				if (!ele[field]) {
+		for (const destCity of dest_cities) {
+			for (const field of ['city_name', 'city_place_id', 'utc_offset_minutes']) {
+				if (!destCity[field]) {
 					return res.status(400).json({
-						error: `Missing '${field}' of 'dest_cities[${idx}]' in request body`
+						error: `Missing '${field}' in request body`
 					});
 				}
-			})
-		})
+			}
+		}
 		
 		newTrip.description = description;
 		newTrip.user_id = req.user.id;
@@ -97,14 +97,13 @@ TripsRouter
 	.route('/:trip_id/plans/:plan_id')
 	.all(requireAuth)
 	.all(checkTripExists)
+	.all(checkPlanExists)
 	.get((req, res, next) => {
 		PlansService.getPlanById(
 			req.app.get('db'),
 			req.params.plan_id
 		)
 		.then(plan => {
-			console.log(plan);
-			
 			res.json(PlansService.serializePlan(plan));
 		})
 		.catch(next);
@@ -130,6 +129,27 @@ async function checkTripExists(req, res, next) {
 
 		res.trip = trip;
 		res.dest_cities = dest_cities;
+		next();
+	}
+	catch (error) {
+		next(error);
+	};
+}
+
+async function checkPlanExists(req, res, next) {
+	try {
+		const plan = await PlansService.getPlanById(
+			req.app.get('db'),
+			req.params.plan_id
+		);
+
+		if (!plan) {
+			return res.status(404).json({
+				error: `Plan doesn't exist`
+			});
+		}
+
+		res.plan = plan;
 		next();
 	}
 	catch (error) {

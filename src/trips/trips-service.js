@@ -33,6 +33,7 @@ const TripsService = {
 				'dc.id',
 				'dc.city_name',
 				'dc.city_place_id',
+				'dc.utc_offset_minutes',
 				't.id AS trip_id'
 			)
 			.innerJoin(
