@@ -43,6 +43,16 @@ describe('Protected endpoints', () => {
 			method: supertest(app).post,
 		},
 		{
+			name: 'GET /api/trips/:trip_id',
+			path: '/api/trips/1',
+			method: supertest(app).get,
+		},
+		{
+			name: 'DELETE /api/trips/:trip_id',
+			path: '/api/trips/1',
+			method: supertest(app).delete,
+		},
+		{
 			name: 'GET /api/trips/:trip_id/plans',
 			path: '/api/trips/1/plans',
 			method: supertest(app).get,
@@ -51,6 +61,16 @@ describe('Protected endpoints', () => {
 			name: 'GET /api/trips/:trip_id/plans/:plan_id',
 			path: '/api/trips/1/plans/1',
 			method: supertest(app).get,
+		},
+		{
+			name: 'DELETE /api/trips/:trip_id/plans/:plan_id',
+			path: '/api/trips/1/plans/1',
+			method: supertest(app).delete,
+		},
+		{
+			name: 'PATCH /api/trips/:trip_id/plans/:plan_id',
+			path: '/api/trips/1/plans/1',
+			method: supertest(app).delete,
 		},
 		{
 			name: 'POST /api/plans',

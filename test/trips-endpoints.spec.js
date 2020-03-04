@@ -108,6 +108,51 @@ describe('Trips Endpoints', () => {
 		})
 	})
 
+	describe(`DELETE /api/trips/:trip_id`, () => {
+		context(`Given no trips`, () => {
+			beforeEach('insert users', () => helpers.seedUsers(db, testUsers))
+
+			it(`responds with 404 when trip doesn't exist`, () => {
+				const tripId = 123456;
+				return supertest(app)
+					.delete(`/api/trips/${tripId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Trip doesn't exist` });
+			})
+		})
+
+		context('Given there are trips in the database', () => {
+			beforeEach('insert trips', () =>
+				helpers.seedTripsTables(
+					db,
+					testUsers,
+					testTrips,
+					testDestCities,
+					testPlans
+				)
+			)
+
+			it('deletes the specified trip, responding with 204', () => {
+				const tripId = 2;				
+				const expectedTrips = helpers.makeExpectedTrips(
+					testTrips.filter(t => t.user_id === testUser.id && t.id !== tripId),
+					testDestCities,
+				)
+
+				return supertest(app)
+					.delete(`/api/trips/${tripId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(204)
+					.then(() => {
+						return supertest(app)
+							.get(`/api/trips`)
+							.set('Authorization', helpers.makeAuthHeader(testUser))
+							.expect(200, expectedTrips);
+						});
+			})
+		})
+	})
+
 	describe(`POST /api/trips`, () => {
 		beforeEach('insert users', () => helpers.seedUsers(db, testUsers))
 
@@ -276,9 +321,8 @@ describe('Trips Endpoints', () => {
 			it('responds with 200 and the specified plans', () => {
 				const tripId = 1;
 				const expectedPlans = helpers.makeExpectedPlans(
-					tripId, 
-					testDestCities, 
-					testPlans
+					testPlans.filter(p => p.trip_id === tripId),
+					testDestCities
 				);
 
 				return supertest(app)
@@ -346,6 +390,164 @@ describe('Trips Endpoints', () => {
 				.get(`/api/trips/${testPlan.trip_id}/plans/${testPlan.id}`)
 				.set('Authorization', helpers.makeAuthHeader(testUser))
 				.expect(200, expectedPlan);
+			})
+		})
+	})
+
+	describe(`DELETE /api/trips/:trip_id/plans/:plan_id`, () => {
+		context(`Given no trips`, () => {
+			beforeEach('insert users', () => helpers.seedUsers(db, testUsers))
+
+			it(`responds with 404 when trip doesn't exist`, () => {
+				const tripId = 123456;
+				const planId = 2;
+				return supertest(app)
+					.delete(`/api/trips/${tripId}/plans/${planId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Trip doesn't exist` });
+			})
+		})
+
+		context(`Given no plans for the trip`, () => {
+			beforeEach('insert trips', () => 
+				helpers.seedTripsTables(
+					db,
+					testUsers,
+					testTrips,
+					testDestCities,
+					testPlans
+				)
+			)
+
+			it(`responds with 404 when plan doesn't exist`, () => {
+				const tripId = 1;
+				const planId = 123456;
+				return supertest(app)
+					.delete(`/api/trips/${tripId}/plans/${planId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Plan doesn't exist` });
+			})
+		})
+
+		context('Given there are plans for the trip in the database', () => {
+			beforeEach('insert trips', () => 
+				helpers.seedTripsTables(
+					db,
+					testUsers,
+					testTrips,
+					testDestCities,
+					testPlans
+				)
+			)
+
+			it('deletes the specified plan, responding with 204', () => {
+				const testPlan = testPlans[0];
+				const expectedPlans = helpers.makeExpectedPlans(
+					testPlans.filter(p => p.trip_id === testPlan.trip_id && p.id !== testPlan.id),
+					testDestCities
+				);
+
+				return supertest(app)
+					.delete(`/api/trips/${testPlan.trip_id}/plans/${testPlan.id}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(204)
+					.then(() => {
+						return supertest(app)
+							.get(`/api/trips/${testPlan.trip_id}/plans`)
+							.set('Authorization', helpers.makeAuthHeader(testUser))
+							.expect(200, expectedPlans);
+						});
+			})
+		})
+	})
+
+	describe(`PATCH /api/trips/:trip_id/plans/:plan_id`, () => {
+		context(`Given no trips`, () => {
+			beforeEach('insert users', () => helpers.seedUsers(db, testUsers))
+
+			it(`responds with 404 when trip doesn't exist`, () => {
+				const tripId = 123456;
+				const planId = 2;
+				return supertest(app)
+					.patch(`/api/trips/${tripId}/plans/${planId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Trip doesn't exist` });
+			})
+		})
+
+		context(`Given no plans for the trip`, () => {
+			beforeEach('insert trips', () => 
+				helpers.seedTripsTables(
+					db,
+					testUsers,
+					testTrips,
+					testDestCities,
+					testPlans
+				)
+			)
+
+			it(`responds with 404 when plan doesn't exist`, () => {
+				const tripId = 1;
+				const planId = 123456;
+				return supertest(app)
+					.patch(`/api/trips/${tripId}/plans/${planId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Plan doesn't exist` });
+			})
+		})
+
+		context('Given there are plans for the trip in the database', () => {
+			beforeEach('insert trips', () => 
+				helpers.seedTripsTables(
+					db,
+					testUsers,
+					testTrips,
+					testDestCities,
+					testPlans
+				)
+			)
+
+			it('responds with 400 when no required field is provided', () => {
+				const tripId = 1;
+				const planId = 1;
+				return supertest(app)
+					.patch(`/api/trips/${tripId}/plans/${planId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(400, {
+						error: `Request body must contain at least one field to update`
+					});
+			})
+
+			it('updates the specified plan, responding with 204', () => {
+				const tripId = 1;
+				const planId = 1;
+				const updatePlan = {
+					plan_type: 'Car Rental',
+					plan_name: 'Hertz Newtown Square', 
+					plan_place_id: '19073', 
+					start_date: '2019-04-05T20:00:00.000Z', 
+					end_date: '2019-04-05T21:00:00.000Z', 
+					description: 'test blah blah', 
+					trip_dest_city_id: 2
+				};
+				const expectedPlan = helpers.makeExpectedPlan(
+					updatePlan,
+					testDestCities
+				);
+				expectedPlan.id = planId;
+				expectedPlan.trip_id = tripId;
+
+				return supertest(app)
+					.patch(`/api/trips/${tripId}/plans/${planId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.send(updatePlan)
+					.expect(204)
+					.then(() => {
+						return supertest(app)
+							.get(`/api/trips/${tripId}/plans/${planId}`)
+							.set('Authorization', helpers.makeAuthHeader(testUser))
+							.expect(200, expectedPlan);
+						});
 			})
 		})
 	})

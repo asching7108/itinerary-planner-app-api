@@ -88,6 +88,30 @@ const TripsService = {
 		return Promise.all([resTrip, resDestCities]);
 	},
 
+	async deleteTripById(db, trip_id) {
+		const resDestCities = db
+			.from('trip_dest_cities')
+			.delete()
+			.where('trip_id', trip_id);
+
+		const resTrip = await resDestCities
+			.then(() => 
+				db
+					.from('trips')
+					.delete()
+					.where('id', trip_id)
+			);
+
+		return Promise.all([resTrip, resDestCities]);
+	},
+
+	updateTripById(db, trip_id, updateTrip) {
+		return db
+			.from('trips')
+			.update(updateTrip)
+			.where('id', trip_id);
+	},
+
 	mapDestCities(destCities) {
 		const destCitiesMap = new Map();
 

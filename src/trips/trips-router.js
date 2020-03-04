@@ -74,8 +74,20 @@ TripsRouter
 	.route('/:trip_id')
 	.all(requireAuth)
 	.all(checkTripExists)
+
 	.get((req, res) => {
 		res.json(TripsService.serializeTrip(res.trip, res.dest_cities));
+	})
+
+	.delete((req, res, next) => {
+		TripsService.deleteTripById(
+			req.app.get('db'),
+			req.params.trip_id
+		)
+			.then(() => {
+				res.status(204).end();
+			})
+			.catch(next);
 	})
 
 TripsRouter
@@ -98,6 +110,7 @@ TripsRouter
 	.all(requireAuth)
 	.all(checkTripExists)
 	.all(checkPlanExists)
+
 	.get((req, res, next) => {
 		PlansService.getPlanById(
 			req.app.get('db'),
@@ -107,6 +120,55 @@ TripsRouter
 			res.json(PlansService.serializePlan(plan));
 		})
 		.catch(next);
+	})
+
+	.delete((req, res, next) => {
+		PlansService.deletePlanById(
+			req.app.get('db'),
+			req.params.plan_id
+		)
+			.then(() => {
+				res.status(204).end();
+			})
+			.catch(next);
+	})
+
+	.patch(jsonBodyParser, (req, res, next) => {
+		const { 
+			plan_type, 
+			plan_name, 
+			plan_place_id, 
+			start_date, 
+			end_date, 
+			description, 
+			trip_dest_city_id 
+		} = req.body;
+		const planToUpdate = { 
+			plan_type, 
+			plan_name, 
+			plan_place_id, 
+			start_date, 
+			end_date, 
+			description, 
+			trip_dest_city_id 
+		 };
+
+		const numOfValues = Object.values(planToUpdate).filter(Boolean).length;
+		if (!numOfValues) {
+			return res.status(400).json({
+				error: `Request body must contain at least one field to update`
+			})
+		}
+
+		PlansService.updatePlanById(
+			req.app.get('db'),
+			req.params.plan_id,
+			planToUpdate
+		)
+			.then(() => {
+				res.status(204).end();
+			})
+			.catch(next);
 	})
 
 async function checkTripExists(req, res, next) {

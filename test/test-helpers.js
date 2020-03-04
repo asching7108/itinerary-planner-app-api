@@ -177,6 +177,10 @@ function makePlansArray() {
 	];
 }
 
+function makeExpectedTrips(trips, destCities) {
+	return trips.map(t => makeExpectedTrip(t, destCities));
+}
+
 function makeExpectedTrip(trip, destCities) {
 	const destCitiesForTrip = destCities
 		.filter(dc => dc.trip_id === trip.id);
@@ -189,12 +193,8 @@ function makeExpectedTrip(trip, destCities) {
 	return expectedTrip;
 }
 
-function makeExpectedPlans(tripId, destCities, plans) {
-	const expectedPlans = plans
-		.filter(p => p.trip_id === tripId);
-	
-	return expectedPlans.map(plan => 
-		makeExpectedPlan(plan, destCities)
+function makeExpectedPlans(plans, destCities) {	
+	return plans.map(p => makeExpectedPlan(p, destCities)
 	);
 }
 
@@ -289,6 +289,7 @@ module.exports = {
 	makeTripsArray,
 	makeDestCitiesArray,
 	makePlansArray,
+	makeExpectedTrips,
 	makeExpectedTrip,
 	makeExpectedPlans,
 	makeExpectedPlan,

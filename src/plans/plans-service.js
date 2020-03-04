@@ -51,6 +51,20 @@ const PlansService = {
 				this.getPlanById(db, plan.id)
 			);
 	},
+
+	deletePlanById(db, plan_id) {
+		return db
+			.from('trip_plans')
+			.delete()
+			.where('id', plan_id);
+	},
+	
+	updatePlanById(db, plan_id, updatePlan) {
+		return db
+			.from('trip_plans')
+			.update(updatePlan)
+			.where('id', plan_id);
+	},
 	
 	serializePlans(plans) {
 		return plans.map(this.serializePlan);
