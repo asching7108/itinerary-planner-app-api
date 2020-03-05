@@ -14,20 +14,14 @@ const PlansService = {
 				'tp.end_date',
 				'tp.description',
 				'tp.trip_id',
-				'tp.trip_dest_city_id',
-				'dc.city_name',
-				'dc.utc_offset_minutes'
+				'tp.city_name',
+				'tp.utc_offset_minutes'
 			)
 			.innerJoin(
 				'trips AS t',
 				'tp.trip_id',
 				't.id'
-			)
-			.innerJoin(
-				'trip_dest_cities AS dc',
-				'tp.trip_dest_city_id',
-				'dc.id'
-			)
+			);
 	},
 
 	getPlansForTrip(db, trip_id) {
@@ -63,7 +57,11 @@ const PlansService = {
 		return db
 			.from('trip_plans')
 			.update(updatePlan)
-			.where('id', plan_id);
+			.where('id', plan_id)
+			.then(() => {
+				db.raw(`UPDATE trip_plans SET date_modified = now() AT TIME ZONE 'UTC' WHERE id = ${plan_id}`)
+					.then(() => PlansService.getPlanById(db, plan_id));
+			});
 	},
 	
 	serializePlans(plans) {
@@ -83,7 +81,6 @@ const PlansService = {
 			end_date: planData.end_date,
 			description: xss(planData.description),
 			trip_id: planData.trip_id,
-			trip_dest_city_id: planData.trip_dest_city_id,
 			city_name: planData.city_name,
 			utc_offset_minutes: planData.utc_offset_minutes
 		};

@@ -17,9 +17,10 @@ PlansRouter
 			end_date, 
 			description, 
 			trip_id, 
-			trip_dest_city_id 
+      city_name,
+      utc_offset_minutes
 		} = req.body;
-		let newPlan = { plan_type, plan_name, start_date, trip_id, trip_dest_city_id };
+		let newPlan = { plan_type, plan_name, start_date, trip_id, city_name, utc_offset_minutes };
 
 		for (const [key, value] of Object.entries(newPlan)) {
 			if (value == null) {

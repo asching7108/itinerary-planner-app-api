@@ -141,7 +141,8 @@ function makePlansArray() {
 			end_date: '2019-04-01T11:00:00.000Z',
 			description: '',
 			trip_id: 1,
-			trip_dest_city_id: 1
+			city_name: 'Barcelona',
+			utc_offset_minutes: 180
 		},
 		{
 			id: 2,
@@ -151,7 +152,8 @@ function makePlansArray() {
 			end_date: '2019-04-06T00:00:00.000Z',
 			description: '',
 			trip_id: 1,
-			trip_dest_city_id: 1
+			city_name: 'Barcelona',
+			utc_offset_minutes: 180
 		},
 		{
 			id: 3,
@@ -162,7 +164,8 @@ function makePlansArray() {
 			end_date: '2019-04-05T18:00:00.000Z',
 			description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Natus consequuntur deserunt commodi, nobis qui inventore corrupti iusto aliquid debitis unde non.Adipisci, pariatur.Molestiae, libero esse hic adipisci autem neque ?',
 			trip_id: 1,
-			trip_dest_city_id: 1
+			city_name: 'Barcelona',
+			utc_offset_minutes: 180
 		},
 		{
 			id: 4,
@@ -172,7 +175,8 @@ function makePlansArray() {
 			start_date: '2019-04-05T20:00:00.000Z',
 			description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Natus consequuntur deserunt commodi, nobis qui inventore corrupti iusto aliquid debitis unde non.Adipisci, pariatur.Molestiae, libero esse hic adipisci autem neque ?',
 			trip_id: 1,
-			trip_dest_city_id: 2
+			city_name: 'Barcelona',
+			utc_offset_minutes: 180
 		}
 	];
 }
@@ -191,22 +195,6 @@ function makeExpectedTrip(trip, destCities) {
 	};
 	delete expectedTrip.date_created;
 	return expectedTrip;
-}
-
-function makeExpectedPlans(plans, destCities) {	
-	return plans.map(p => makeExpectedPlan(p, destCities)
-	);
-}
-
-function makeExpectedPlan(plan, destCities) {
-	const destCity = destCities
-		.find(dc => dc.id === plan.trip_dest_city_id);
-
-	return {
-		city_name: destCity.city_name,
-		utc_offset_minutes: destCity.utc_offset_minutes,
-		...plan
-	};
 }
 
 function makeTripsFixtures() {
@@ -291,8 +279,6 @@ module.exports = {
 	makePlansArray,
 	makeExpectedTrips,
 	makeExpectedTrip,
-	makeExpectedPlans,
-	makeExpectedPlan,
 	makeTripsFixtures,
 	cleanTables,
 	seedUsers,

@@ -90,6 +90,28 @@ TripsRouter
 			.catch(next);
 	})
 
+	.patch(jsonBodyParser, (req, res, next) => {
+		const { trip_name, dest_cities, start_date, end_date, description } = req.body;
+		const tripToUpdate = { trip_name, dest_cities, start_date, end_date, description };
+
+		const numOfValues = Object.values(tripToUpdate).filter(Boolean).length;
+		if (!numOfValues) {
+			return res.status(400).json({
+				error: `Request body must contain at least one field to update`
+			})
+		}
+
+		TripsService.updateTripById(
+			req.app.get('db'),
+			req.params.trip_id,
+			tripToUpdate
+		)
+			.then(() => {
+				res.status(204).end();
+			})
+			.catch(next);
+	})
+
 TripsRouter
 	.route('/:trip_id/plans')
 	.all(requireAuth)
@@ -141,7 +163,8 @@ TripsRouter
 			start_date, 
 			end_date, 
 			description, 
-			trip_dest_city_id 
+			city_name,
+			utc_offset_minutes 
 		} = req.body;
 		const planToUpdate = { 
 			plan_type, 
@@ -150,7 +173,8 @@ TripsRouter
 			start_date, 
 			end_date, 
 			description, 
-			trip_dest_city_id 
+			city_name,
+			utc_offset_minutes 
 		 };
 
 		const numOfValues = Object.values(planToUpdate).filter(Boolean).length;

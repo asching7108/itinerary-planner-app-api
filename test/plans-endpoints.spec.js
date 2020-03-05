@@ -43,7 +43,8 @@ describe('Plans Endpoints', () => {
 			'plan_name', 
 			'start_date',  
 			'trip_id', 
-			'trip_dest_city_id'
+			'city_name',
+			'utc_offset_minutes'
 		];
 
 		requiredFields.forEach(field => {
@@ -53,7 +54,8 @@ describe('Plans Endpoints', () => {
 				start_date: '2020-07-01T00:00:00.000Z',
 				end_date: '2020-07-03T00:00:00.000Z',
 				trip_id: 1,
-				trip_dest_city_id: 1
+				city_name: 'Taipei',
+				utc_offset_minutes: 480
 			};
 
 			it(`responds with 400 error when the '${field}' is missing`, () => {
@@ -77,7 +79,8 @@ describe('Plans Endpoints', () => {
 				end_date: '2020-07-03T00:00:00.000Z',
 				description: 'blah blah',
 				trip_id: 1,
-				trip_dest_city_id: 1
+				city_name: 'Taipei',
+				utc_offset_minutes: 480
 			};
 
 			return supertest(app)
@@ -93,7 +96,8 @@ describe('Plans Endpoints', () => {
 					expect(res.body.end_date).to.eql(newPlan.end_date);
 					expect(res.body.description).to.eql(newPlan.description);
 					expect(res.body.trip_id).to.eql(newPlan.trip_id);
-					expect(res.body.trip_dest_city_id).to.eql(newPlan.trip_dest_city_id);
+					expect(res.body.city_name).to.eql(newPlan.city_name);
+					expect(res.body.utc_offset_minutes).to.eql(newPlan.utc_offset_minutes);
 					expect(res.headers.location).to.eql(`/api/trips/${res.body.trip_id}/plans/${res.body.id}`);
 				})
 				.expect(res => {
@@ -109,7 +113,8 @@ describe('Plans Endpoints', () => {
 							expect(new Date(row.end_date).toISOString()).to.eql(newPlan.end_date);
 							expect(row.description).to.eql(newPlan.description);
 							expect(row.trip_id).to.eql(newPlan.trip_id);
-							expect(row.trip_dest_city_id).to.eql(newPlan.trip_dest_city_id);
+							expect(row.city_name).to.eql(newPlan.city_name);
+							expect(row.utc_offset_minutes).to.eql(newPlan.utc_offset_minutes);
 							const expectDate = new Date().toLocaleString();
 							const actualDate = new Date(row.date_created).toLocaleString();
 							expect(actualDate).to.eql(expectDate);

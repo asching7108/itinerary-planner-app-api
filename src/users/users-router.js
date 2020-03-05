@@ -43,8 +43,7 @@ UsersRouter
 						const newUser = {
 							email,
 							password: hashedPassword,
-							user_name,
-							date_created: 'now()'
+							user_name
 						};
 						return UsersService.insertUser(
 							req.app.get('db'),

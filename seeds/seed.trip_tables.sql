@@ -28,12 +28,12 @@ VALUES
 	('Rome', '789', 180, 1),
 	('Tokyo', '321', 720, 2);
 
-INSERT INTO trip_plans (plan_type, plan_name, plan_place_id, start_date, end_date, description, trip_id, trip_dest_city_id)
+INSERT INTO trip_plans (plan_type, plan_name, plan_place_id, start_date, end_date, description, trip_id, city_name, utc_offset_minutes)
 VALUES
-	('Flight', 'BR772', '', '2019-04-01T04:05:00.000Z', '2019-04-01T10:50:00.000Z', NULL, 1, 1),
-	('Lodging', 'H10 Metropolitan Hotel', '', '2019-04-01T13:00:00.000Z', '2019-04-05T09:00:00.000Z', NULL, 1, 1),
-	('Activity', 'La Sagrada Familia', '', '2019-04-02T10:00:00.000Z', '2019-04-02T14:00:00.000Z', 'Gaudis masterpiece', 1, 1),
-	('Restaurant', 'Lily Afternoon Tea', '', '2019-04-02T15:00:00.000Z', NULL, NULL, 1, 1),
-	('Restaurant', 'The Good Food', '', '2019-04-02T20:00:00.000Z', NULL, NULL, 1, 1);
+	('Flight', 'BR772', '', '2019-04-01T04:05:00.000Z', '2019-04-01T10:50:00.000Z', NULL, 1, 'Barcelona', 180),
+	('Lodging', 'H10 Metropolitan Hotel', '', '2019-04-01T13:00:00.000Z', '2019-04-05T09:00:00.000Z', NULL, 1, 'Barcelona', 180),
+	('Activity', 'La Sagrada Familia', '', '2019-04-02T10:00:00.000Z', '2019-04-02T14:00:00.000Z', 'Gaudis masterpiece', 1, 'Barcelona', 180),
+	('Restaurant', 'Lily Afternoon Tea', '', '2019-04-02T15:00:00.000Z', NULL, NULL, 1, 'Barcelona', 180),
+	('Restaurant', 'The Good Food', '', '2019-04-02T20:00:00.000Z', NULL, NULL, 1, 'Barcelona', 180);
 
 COMMIT;

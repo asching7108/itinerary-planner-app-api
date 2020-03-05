@@ -108,51 +108,6 @@ describe('Trips Endpoints', () => {
 		})
 	})
 
-	describe(`DELETE /api/trips/:trip_id`, () => {
-		context(`Given no trips`, () => {
-			beforeEach('insert users', () => helpers.seedUsers(db, testUsers))
-
-			it(`responds with 404 when trip doesn't exist`, () => {
-				const tripId = 123456;
-				return supertest(app)
-					.delete(`/api/trips/${tripId}`)
-					.set('Authorization', helpers.makeAuthHeader(testUser))
-					.expect(404, { error: `Trip doesn't exist` });
-			})
-		})
-
-		context('Given there are trips in the database', () => {
-			beforeEach('insert trips', () =>
-				helpers.seedTripsTables(
-					db,
-					testUsers,
-					testTrips,
-					testDestCities,
-					testPlans
-				)
-			)
-
-			it('deletes the specified trip, responding with 204', () => {
-				const tripId = 2;				
-				const expectedTrips = helpers.makeExpectedTrips(
-					testTrips.filter(t => t.user_id === testUser.id && t.id !== tripId),
-					testDestCities,
-				)
-
-				return supertest(app)
-					.delete(`/api/trips/${tripId}`)
-					.set('Authorization', helpers.makeAuthHeader(testUser))
-					.expect(204)
-					.then(() => {
-						return supertest(app)
-							.get(`/api/trips`)
-							.set('Authorization', helpers.makeAuthHeader(testUser))
-							.expect(200, expectedTrips);
-						});
-			})
-		})
-	})
-
 	describe(`POST /api/trips`, () => {
 		beforeEach('insert users', () => helpers.seedUsers(db, testUsers))
 
@@ -253,6 +208,13 @@ describe('Trips Endpoints', () => {
 					expect(res.body.description).to.eql(newTrip.description);
 					expect(res.body.user_id).to.eql(testUser.id);
 					expect(res.headers.location).to.eql(`/api/trips/${res.body.id}`);
+					res.body.dest_cities.forEach((dc, idx) => {
+						expect(dc).to.have.property('id');
+						expect(dc).to.have.property('trip_id');
+						expect(dc.city_name).to.eql(newTrip.dest_cities[idx].city_name);
+						expect(dc.city_place_id).to.eql(newTrip.dest_cities[idx].city_place_id);
+						expect(dc.utc_offset_minutes).to.eql(newTrip.dest_cities[idx].utc_offset_minutes);
+					})
 				})
 				.expect(res => {
 					db
@@ -271,6 +233,146 @@ describe('Trips Endpoints', () => {
 							expect(actualDate).to.eql(expectDate);
 						})
 				})
+				.expect(res => {
+					db
+						.from('trip_dest_cities')
+						.select('*')
+						.where({ trip_id: res.body.id })
+						.then(rows => {
+							rows.forEach((row, idx) => {
+								expect(row.city_name).to.eql(newTrip.dest_cities[idx].city_name);
+								expect(row.city_place_id).to.eql(newTrip.dest_cities[idx].city_place_id);
+								expect(row.utc_offset_minutes).to.eql(newTrip.dest_cities[idx].utc_offset_minutes);
+							})
+						})
+				});
+		})
+	})
+
+	describe(`DELETE /api/trips/:trip_id`, () => {
+		context(`Given no trips`, () => {
+			beforeEach('insert users', () => helpers.seedUsers(db, testUsers))
+
+			it(`responds with 404 when trip doesn't exist`, () => {
+				const tripId = 123456;
+				return supertest(app)
+					.delete(`/api/trips/${tripId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Trip doesn't exist` });
+			})
+		})
+
+		context('Given there are trips in the database', () => {
+			beforeEach('insert trips', () =>
+				helpers.seedTripsTables(
+					db,
+					testUsers,
+					testTrips,
+					testDestCities,
+					testPlans
+				)
+			)
+
+			it('deletes the specified trip, responding with 204', () => {
+				const tripId = 2;				
+				const expectedTrips = helpers.makeExpectedTrips(
+					testTrips.filter(t => t.user_id === testUser.id && t.id !== tripId),
+					testDestCities,
+				)
+
+				return supertest(app)
+					.delete(`/api/trips/${tripId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(204)
+					.then(() => {
+						return supertest(app)
+							.get(`/api/trips`)
+							.set('Authorization', helpers.makeAuthHeader(testUser))
+							.expect(200, expectedTrips);
+						});
+			})
+		})
+	})
+
+	describe(`PATCH /api/trips/:trip_id`, () => {
+		context(`Given no trips`, () => {
+			beforeEach('insert users', () => helpers.seedUsers(db, testUsers))
+
+			it(`responds with 404 when trip doesn't exist`, () => {
+				const tripId = 123456;
+				return supertest(app)
+					.delete(`/api/trips/${tripId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Trip doesn't exist` });
+			})
+		})
+
+		context('Given there are trips in the database', () => {
+			beforeEach('insert trips', () =>
+				helpers.seedTripsTables(
+					db,
+					testUsers,
+					testTrips,
+					testDestCities,
+					testPlans
+				)
+			)
+
+			it('updates the specified trip, responding with 204', () => {
+				const tripId = 2;				
+				const updateTrip = {
+					trip_name: 'Test Update Trip',
+					dest_cities: [
+						{
+							city_name: 'Taipei',
+							city_place_id: '654321',
+							utc_offset_minutes: 480
+						}
+					],
+					start_date: '2021-07-01T00:00:00.000Z',
+					end_date: '2021-07-03T00:00:00.000Z',
+					description: 'test update description blah blah'
+				};
+				const expectedTrip = updateTrip;
+				expectedTrip.id = tripId;
+				expectedTrip.user_id = testUser.id;
+
+				return supertest(app)
+					.patch(`/api/trips/${tripId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.send(updateTrip)
+					.expect(204)
+					.expect(() => {
+						db
+							.from('trips')
+							.select('*')
+							.where({ id: tripId })
+							.first()
+							.then(row => {
+								expect(row.trip_name).to.eql(updateTrip.trip_name);
+								expect(new Date(row.start_date).toISOString()).to.eql(updateTrip.start_date);
+								expect(new Date(row.end_date).toISOString()).to.eql(updateTrip.end_date);
+								expect(row.description).to.eql(updateTrip.description);
+								expect(row.user_id).to.eql(testUser.id);
+								const expectDate = new Date().toLocaleString();
+								const actualDate = new Date(row.date_modified).toLocaleString();
+								expect(actualDate).to.eql(expectDate);
+							})
+					})
+					.expect(() => {
+						db
+							.from('trip_dest_cities')
+							.select('*')
+							.where({ trip_id: tripId })
+							.then(rows => {
+								rows.forEach((row, idx) => {
+									expect(row.city_name).to.eql(updateTrip.dest_cities[idx].city_name);
+									expect(row.city_place_id).to.eql(updateTrip.dest_cities[idx].city_place_id);
+									expect(row.utc_offset_minutes).to.eql(updateTrip.dest_cities[idx].utc_offset_minutes);
+								})
+							})
+					});
+			})
 		})
 	})
 
@@ -320,10 +422,7 @@ describe('Trips Endpoints', () => {
 
 			it('responds with 200 and the specified plans', () => {
 				const tripId = 1;
-				const expectedPlans = helpers.makeExpectedPlans(
-					testPlans.filter(p => p.trip_id === tripId),
-					testDestCities
-				);
+				const expectedPlans = testPlans.filter(p => p.trip_id === tripId);
 
 				return supertest(app)
 				.get(`/api/trips/${tripId}/plans`)
@@ -381,15 +480,11 @@ describe('Trips Endpoints', () => {
 
 			it('responds with 200 and the specified plan', () => {
 				const testPlan = testPlans[0];
-				const expectedPlan = helpers.makeExpectedPlan(
-					testPlan, 
-					testDestCities
-				);
 
 				return supertest(app)
 				.get(`/api/trips/${testPlan.trip_id}/plans/${testPlan.id}`)
 				.set('Authorization', helpers.makeAuthHeader(testUser))
-				.expect(200, expectedPlan);
+				.expect(200, testPlan);
 			})
 		})
 	})
@@ -442,10 +537,8 @@ describe('Trips Endpoints', () => {
 
 			it('deletes the specified plan, responding with 204', () => {
 				const testPlan = testPlans[0];
-				const expectedPlans = helpers.makeExpectedPlans(
-					testPlans.filter(p => p.trip_id === testPlan.trip_id && p.id !== testPlan.id),
-					testDestCities
-				);
+				const expectedPlans = testPlans
+					.filter(p => p.trip_id === testPlan.trip_id && p.id !== testPlan.id);
 
 				return supertest(app)
 					.delete(`/api/trips/${testPlan.trip_id}/plans/${testPlan.id}`)
@@ -528,26 +621,34 @@ describe('Trips Endpoints', () => {
 					start_date: '2019-04-05T20:00:00.000Z', 
 					end_date: '2019-04-05T21:00:00.000Z', 
 					description: 'test blah blah', 
-					trip_dest_city_id: 2
+					city_name: 'New City',
+					utc_offset_minutes: 240
 				};
-				const expectedPlan = helpers.makeExpectedPlan(
-					updatePlan,
-					testDestCities
-				);
-				expectedPlan.id = planId;
-				expectedPlan.trip_id = tripId;
 
 				return supertest(app)
 					.patch(`/api/trips/${tripId}/plans/${planId}`)
 					.set('Authorization', helpers.makeAuthHeader(testUser))
 					.send(updatePlan)
 					.expect(204)
-					.then(() => {
-						return supertest(app)
-							.get(`/api/trips/${tripId}/plans/${planId}`)
-							.set('Authorization', helpers.makeAuthHeader(testUser))
-							.expect(200, expectedPlan);
-						});
+					.expect(() => {
+						db
+							.from('trip_plans')
+							.select('*')
+							.where({ id: planId })
+							.first()
+							.then(row => {
+								expect(row.plan_type).to.eql(updatePlan.plan_type);
+								expect(row.plan_name).to.eql(updatePlan.plan_name);
+								expect(new Date(row.start_date).toISOString()).to.eql(updatePlan.start_date);
+								expect(new Date(row.end_date).toISOString()).to.eql(updatePlan.end_date);
+								expect(row.description).to.eql(updatePlan.description);
+								expect(row.city_name).to.eql(updatePlan.city_name);
+								expect(row.utc_offset_minutes).to.eql(updatePlan.utc_offset_minutes);
+								const expectDate = new Date().toLocaleString();
+								const actualDate = new Date(row.date_modified).toLocaleString();
+								expect(actualDate).to.eql(expectDate);
+							})
+					})
 			})
 		})
 	})

@@ -6,7 +6,7 @@ CREATE TABLE trips (
 	description TEXT,
 	user_id INTEGER
 		REFERENCES users(id) ON DELETE CASCADE NOT NULL,
-	date_created TIMESTAMP NOT NULL DEFAULT now(),
+	date_created TIMESTAMP NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
 	date_modified TIMESTAMP
 );
 
