@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const TripsService = require('./trips-service');
-const PlansService = require('../plans/plans-service');
+const PlansService = require('./plans-service');
 const { requireAuth } = require('../middleware/jwt-auth');
 
 const TripsRouter = express.Router();
@@ -116,6 +116,7 @@ TripsRouter
 	.route('/:trip_id/plans')
 	.all(requireAuth)
 	.all(checkTripExists)
+
 	.get((req, res, next) => {
 		PlansService.getPlansForTrip(
 			req.app.get('db'),
@@ -126,6 +127,52 @@ TripsRouter
 		})
 		.catch(next);
 	})
+
+  .post(jsonBodyParser, (req, res, next) => {
+		const { 
+			plan_type, 
+			plan_name, 
+			start_date, 
+			end_date, 
+			description,  
+      city_name,
+      utc_offset_minutes
+		} = req.body;
+		let newPlan = { 
+			plan_type, 
+			plan_name, 
+			start_date, 
+			city_name, 
+			utc_offset_minutes
+		};
+
+		for (const [key, value] of Object.entries(newPlan)) {
+			if (value == null) {
+				return res.status(400).json({
+					error: `Missing '${key}' in request body`
+				});
+			}
+		}
+
+		newPlan = {
+			end_date,
+			description,
+			trip_id: req.params.trip_id,
+			...newPlan
+		};
+
+		PlansService.insertPlan(
+			req.app.get('db'),
+			newPlan
+		)
+			.then(plan => {
+				res
+					.status(201)
+					.location(`/api/trips/${plan.trip_id}/plans/${plan.id}`)
+					.json(PlansService.serializePlan(plan));
+			})
+			.catch(next);
+  })
 
 TripsRouter
 	.route('/:trip_id/plans/:plan_id')

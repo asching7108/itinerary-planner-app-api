@@ -489,6 +489,100 @@ describe('Trips Endpoints', () => {
 		})
 	})
 
+	describe(`POST /api/trips/:trip_id/plans`, () => {
+		beforeEach('insert plans', () => 
+			helpers.seedTripsTables(
+				db,
+				testUsers,
+				testTrips,
+				testDestCities,
+				testPlans
+			)
+		)
+
+		const requiredFields = [
+			'plan_type', 
+			'plan_name', 
+			'start_date',  
+			'city_name',
+			'utc_offset_minutes'
+		];
+
+		requiredFields.forEach(field => {
+			const tripId = 1;
+			const newPlan = {
+				plan_type: 'Activity',
+				plan_name: 'Test New Plan',
+				start_date: '2020-07-01T00:00:00.000Z',
+				city_name: 'Taipei',
+				utc_offset_minutes: 480
+			};
+
+			it(`responds with 400 error when the '${field}' is missing`, () => {
+				delete newPlan[field];
+
+				return supertest(app)
+					.post(`/api/trips/${tripId}/plans`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.send(newPlan)
+					.expect(400, {
+						error: `Missing '${field}' in request body`,
+					})
+			})
+		})
+
+		it('creates a plan, responding with 201 and the new plan', () => {
+			const tripId = 1;
+			const newPlan = {
+				plan_type: 'Activity',
+				plan_name: 'Test New Plan',
+				start_date: '2020-07-01T00:00:00.000Z',
+				end_date: '2020-07-03T00:00:00.000Z',
+				description: 'blah blah',
+				city_name: 'Taipei',
+				utc_offset_minutes: 480
+			};
+
+			return supertest(app)
+				.post(`/api/trips/${tripId}/plans`)
+				.set('Authorization', helpers.makeAuthHeader(testUser))
+				.send(newPlan)
+				.expect(201)
+				.expect(res => {
+					expect(res.body).to.have.property('id');
+					expect(res.body.plan_type).to.eql(newPlan.plan_type);
+					expect(res.body.plan_name).to.eql(newPlan	.plan_name);
+					expect(res.body.start_date).to.eql(newPlan.start_date);
+					expect(res.body.end_date).to.eql(newPlan.end_date);
+					expect(res.body.description).to.eql(newPlan.description);
+					expect(res.body.city_name).to.eql(newPlan.city_name);
+					expect(res.body.utc_offset_minutes).to.eql(newPlan.utc_offset_minutes);
+					expect(res.body.trip_id).to.eql(tripId);
+					expect(res.headers.location).to.eql(`/api/trips/${res.body.trip_id}/plans/${res.body.id}`);
+				})
+				.expect(res => {
+					db
+						.from('trip_plans')
+						.select('*')
+						.where({ id: res.body.id })
+						.first()
+						.then(row => {
+							expect(row.plan_type).to.eql(newPlan.plan_type);
+							expect(row.plan_name).to.eql(newPlan.plan_name);
+							expect(new Date(row.start_date).toISOString()).to.eql(newPlan.start_date);
+							expect(new Date(row.end_date).toISOString()).to.eql(newPlan.end_date);
+							expect(row.description).to.eql(newPlan.description);
+							expect(row.city_name).to.eql(newPlan.city_name);
+							expect(row.utc_offset_minutes).to.eql(newPlan.utc_offset_minutes);
+							expect(row.trip_id).to.eql(tripId);
+							const expectDate = new Date().toLocaleString();
+							const actualDate = new Date(row.date_created).toLocaleString();
+							expect(actualDate).to.eql(expectDate);
+						})
+				})
+		})
+	})
+
 	describe(`DELETE /api/trips/:trip_id/plans/:plan_id`, () => {
 		context(`Given no trips`, () => {
 			beforeEach('insert users', () => helpers.seedUsers(db, testUsers))
