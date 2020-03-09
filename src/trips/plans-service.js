@@ -21,7 +21,8 @@ const PlansService = {
 				'trips AS t',
 				'tp.trip_id',
 				't.id'
-			);
+			)
+			.orderBy(['tp.start_date', 'tp.end_date']);
 	},
 
 	getPlansForTrip(db, trip_id) {
@@ -58,10 +59,10 @@ const PlansService = {
 			.from('trip_plans')
 			.update(updatePlan)
 			.where('id', plan_id)
-			.then(() => {
+			.then(() => 
 				db.raw(`UPDATE trip_plans SET date_modified = now() AT TIME ZONE 'UTC' WHERE id = ${plan_id}`)
-					.then(() => PlansService.getPlanById(db, plan_id));
-			});
+					.then(() => PlansService.getPlanById(db, plan_id))
+			);
 	},
 	
 	serializePlans(plans) {

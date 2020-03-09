@@ -17,7 +17,8 @@ const TripsService = {
 				'users AS u',
 				't.user_id',
 				'u.id'
-			);
+			)
+			.orderBy(['t.start_date', 't.end_date']);
 	},
 
 	getTripById(db, trip_id) {
@@ -136,10 +137,10 @@ const TripsService = {
 			.from('trips')
 			.update(updateTrip)
 			.where('id', trip_id)
-			.then(() => {
+			.then(() => 
 				db.raw(`UPDATE trips SET date_modified = now() AT TIME ZONE 'UTC' WHERE id = ${trip_id}`)
-					.then(() => TripsService.getTripById(db, trip_id));
-			});
+					.then(() => TripsService.getTripById(db, trip_id))
+			);
 
 		return Promise.all([resTrip, resDestCities]);
 	},

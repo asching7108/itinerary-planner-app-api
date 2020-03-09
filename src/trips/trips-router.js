@@ -106,8 +106,8 @@ TripsRouter
 			req.params.trip_id,
 			tripToUpdate
 		)
-			.then(() => {
-				res.status(204).end();
+			.then(([trip, destCities]) => {
+				res.json(TripsService.serializeTrip(trip, destCities));
 			})
 			.catch(next);
 	})
@@ -135,6 +135,7 @@ TripsRouter
 			start_date, 
 			end_date, 
 			description,  
+			plan_place_id, 
       city_name,
       utc_offset_minutes
 		} = req.body;
@@ -157,6 +158,7 @@ TripsRouter
 		newPlan = {
 			end_date,
 			description,
+			plan_place_id,
 			trip_id: req.params.trip_id,
 			...newPlan
 		};
@@ -236,8 +238,8 @@ TripsRouter
 			req.params.plan_id,
 			planToUpdate
 		)
-			.then(() => {
-				res.status(204).end();
+			.then(plan => {
+				res.json(PlansService.serializePlan(plan));
 			})
 			.catch(next);
 	})
