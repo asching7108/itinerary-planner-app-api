@@ -9,7 +9,8 @@ describe('Trips Endpoints', () => {
 		testUsers,
 		testTrips,
 		testDestCities,
-		testPlans
+		testPlans,
+		testPlanDetails
 	} = helpers.makeTripsFixtures();
 	const testUser = testUsers[0];
 
@@ -46,19 +47,15 @@ describe('Trips Endpoints', () => {
 					testUsers,
 					testTrips,
 					testDestCities,
-					testPlans
+					testPlans,
+					testPlanDetails
 				)
 			)
 
 			it('responds with 200 and all of the trips of the given user_id', () => {
-				let expectedTrips = testTrips
-					.filter(trip => trip.user_id === testUser.id);
-
-				expectedTrips = expectedTrips.map(trip =>
-					helpers.makeExpectedTrip(
-						trip,
-						testDestCities
-					)
+				const expectedTrips = helpers.makeExpectedTrips(
+					testTrips.filter(trip => trip.user_id === testUser.id),
+					testDestCities
 				);
 				
 				return supertest(app)
@@ -89,7 +86,8 @@ describe('Trips Endpoints', () => {
 					testUsers,
 					testTrips,
 					testDestCities,
-					testPlans
+					testPlans,
+					testPlanDetails
 				)
 			)
 
@@ -269,7 +267,8 @@ describe('Trips Endpoints', () => {
 					testUsers,
 					testTrips,
 					testDestCities,
-					testPlans
+					testPlans,
+					testPlanDetails
 				)
 			)
 
@@ -314,7 +313,8 @@ describe('Trips Endpoints', () => {
 					testUsers,
 					testTrips,
 					testDestCities,
-					testPlans
+					testPlans,
+					testPlanDetails
 				)
 			)
 
@@ -411,7 +411,8 @@ describe('Trips Endpoints', () => {
 					testUsers,
 					testTrips,
 					testDestCities,
-					testPlans
+					testPlans,
+					testPlanDetails
 				)
 			)
 
@@ -431,13 +432,17 @@ describe('Trips Endpoints', () => {
 					testUsers,
 					testTrips,
 					testDestCities,
-					testPlans
+					testPlans,
+					testPlanDetails
 				)
 			)
 
 			it('responds with 200 and the specified plans', () => {
 				const tripId = 1;
-				const expectedPlans = testPlans.filter(p => p.trip_id === tripId);
+				const expectedPlans = helpers.makeExpectedPlans(
+					testPlans.filter(p => p.trip_id === tripId),
+					testPlanDetails
+				);
 
 				return supertest(app)
 				.get(`/api/trips/${tripId}/plans`)
@@ -468,7 +473,8 @@ describe('Trips Endpoints', () => {
 					testUsers,
 					testTrips,
 					testDestCities,
-					testPlans
+					testPlans,
+					testPlanDetails
 				)
 			)
 
@@ -489,17 +495,22 @@ describe('Trips Endpoints', () => {
 					testUsers,
 					testTrips,
 					testDestCities,
-					testPlans
+					testPlans,
+					testPlanDetails
 				)
 			)
 
 			it('responds with 200 and the specified plan', () => {
 				const testPlan = testPlans[0];
+				const expectedPlan = helpers.makeExpectedPlan(
+					testPlan,
+					testPlanDetails
+				);
 
 				return supertest(app)
 				.get(`/api/trips/${testPlan.trip_id}/plans/${testPlan.id}`)
 				.set('Authorization', helpers.makeAuthHeader(testUser))
-				.expect(200, testPlan);
+				.expect(200, expectedPlan);
 			})
 		})
 	})
@@ -511,7 +522,8 @@ describe('Trips Endpoints', () => {
 				testUsers,
 				testTrips,
 				testDestCities,
-				testPlans
+				testPlans,
+				testPlanDetails
 			)
 		)
 
@@ -549,14 +561,28 @@ describe('Trips Endpoints', () => {
 		it('creates a plan, responding with 201 and the new plan', () => {
 			const tripId = 1;
 			const newPlan = {
-				plan_type: 'Activity',
+				plan_type: 'Car Rental',
 				plan_name: 'Test New Plan',
 				start_date: '2020-07-01T00:00:00.000Z',
 				end_date: '2020-07-03T00:00:00.000Z',
 				description: 'blah blah',
 				plan_place_id: '11078', 
 				city_name: 'Taipei',
-				utc_offset_minutes: 480
+				utc_offset_minutes: 480,
+				plan_details: [
+					{
+						plan_subtype: 'Pick up',
+						from_name: 'ABC Store',
+						from_place_id: '123',
+						from_utc_offset_minutes: 480
+					},
+					{
+						plan_subtype: 'Drop off',
+						to_name: 'DEF Store',
+						to_place_id: '321',
+						to_utc_offset_minutes: 480
+					}
+				]
 			};
 
 			return supertest(app)
@@ -565,23 +591,34 @@ describe('Trips Endpoints', () => {
 				.send(newPlan)
 				.expect(201)
 				.expect(res => {
-					expect(res.body).to.have.property('id');
-					expect(res.body.plan_type).to.eql(newPlan.plan_type);
-					expect(res.body.plan_name).to.eql(newPlan	.plan_name);
-					expect(res.body.start_date).to.eql(newPlan.start_date);
-					expect(res.body.end_date).to.eql(newPlan.end_date);
-					expect(res.body.description).to.eql(newPlan.description);
-					expect(res.body.plan_place_id).to.eql(newPlan.plan_place_id);
-					expect(res.body.city_name).to.eql(newPlan.city_name);
-					expect(res.body.utc_offset_minutes).to.eql(newPlan.utc_offset_minutes);
-					expect(res.body.trip_id).to.eql(tripId);
-					expect(res.headers.location).to.eql(`/api/trips/${res.body.trip_id}/plans/${res.body.id}`);
+					res.body.forEach(p => {
+						expect(p).to.have.property('id');
+						expect(p).to.have.property('plan_detail_id');
+						expect(p.plan_type).to.eql(newPlan.plan_type);
+						expect(p.plan_name).to.eql(newPlan.plan_name);
+						expect(p.start_date).to.eql(newPlan.start_date);
+						expect(p.end_date).to.eql(newPlan.end_date);
+						expect(p.description).to.eql(newPlan.description);
+						expect(p.plan_place_id).to.eql(newPlan.plan_place_id);
+						expect(p.city_name).to.eql(newPlan.city_name);
+						expect(p.utc_offset_minutes).to.eql(newPlan.utc_offset_minutes);
+						expect(p.trip_id).to.eql(tripId);
+					})
+					expect(res.body[0].plan_subtype).to.eql(newPlan.plan_details[0].plan_subtype);
+					expect(res.body[0].from_name).to.eql(newPlan.plan_details[0].from_name);
+					expect(res.body[0].from_place_id).to.eql(newPlan.plan_details[0].from_place_id);
+					expect(res.body[0].from_utc_offset_minutes).to.eql(newPlan.plan_details[0].from_utc_offset_minutes);
+					expect(res.body[1].plan_subtype).to.eql(newPlan.plan_details[1].plan_subtype);
+					expect(res.body[1].to_name).to.eql(newPlan.plan_details[1].to_name);
+					expect(res.body[1].to_place_id).to.eql(newPlan.plan_details[1].to_place_id);
+					expect(res.body[1].to_utc_offset_minutes).to.eql(newPlan.plan_details[1].to_utc_offset_minutes);
+					expect(res.headers.location).to.eql(`/api/trips/${res.body[0].trip_id}/plans/${res.body[0].id}`);
 				})
 				.expect(res => {
 					db
 						.from('trip_plans')
 						.select('*')
-						.where({ id: res.body.id })
+						.where({ id: res.body[0].id })
 						.first()
 						.then(row => {
 							expect(row.plan_type).to.eql(newPlan.plan_type);
@@ -596,8 +633,24 @@ describe('Trips Endpoints', () => {
 							const expectDate = new Date().toLocaleString();
 							const actualDate = new Date(row.date_created).toLocaleString();
 							expect(actualDate).to.eql(expectDate);
-						})
+						});
 				})
+				.expect(res => {
+					db
+						.from('plan_details')
+						.select('*')
+						.where({ plan_id: res.body[0].id })
+						.then(rows => {
+							expect(rows[0].plan_subtype).to.eql(newPlan.plan_details[0].plan_subtype);
+							expect(rows[0].from_name).to.eql(newPlan.plan_details[0].from_name);
+							expect(rows[0].from_place_id).to.eql(newPlan.plan_details[0].from_place_id);
+							expect(rows[0].from_utc_offset_minutes).to.eql(newPlan.plan_details[0].from_utc_offset_minutes);
+							expect(rows[1].plan_subtype).to.eql(newPlan.plan_details[1].plan_subtype);
+							expect(rows[1].to_name).to.eql(newPlan.plan_details[1].to_name);
+							expect(rows[1].to_place_id).to.eql(newPlan.plan_details[1].to_place_id);
+							expect(rows[1].to_utc_offset_minutes).to.eql(newPlan.plan_details[1].to_utc_offset_minutes);
+						});
+				});
 		})
 	})
 
@@ -622,7 +675,8 @@ describe('Trips Endpoints', () => {
 					testUsers,
 					testTrips,
 					testDestCities,
-					testPlans
+					testPlans,
+					testPlanDetails
 				)
 			)
 
@@ -643,14 +697,17 @@ describe('Trips Endpoints', () => {
 					testUsers,
 					testTrips,
 					testDestCities,
-					testPlans
+					testPlans,
+					testPlanDetails
 				)
 			)
 
 			it('deletes the specified plan, responding with 204', () => {
 				const testPlan = testPlans[0];
-				const expectedPlans = testPlans
-					.filter(p => p.trip_id === testPlan.trip_id && p.id !== testPlan.id);
+				const expectedPlans = helpers.makeExpectedPlans(
+					testPlans.filter(p => p.trip_id === testPlan.trip_id && p.id !== testPlan.id),
+					testPlanDetails
+				);
 
 				return supertest(app)
 					.delete(`/api/trips/${testPlan.trip_id}/plans/${testPlan.id}`)
@@ -687,7 +744,8 @@ describe('Trips Endpoints', () => {
 					testUsers,
 					testTrips,
 					testDestCities,
-					testPlans
+					testPlans,
+					testPlanDetails
 				)
 			)
 
@@ -708,7 +766,8 @@ describe('Trips Endpoints', () => {
 					testUsers,
 					testTrips,
 					testDestCities,
-					testPlans
+					testPlans,
+					testPlanDetails
 				)
 			)
 
@@ -728,13 +787,27 @@ describe('Trips Endpoints', () => {
 				const planId = 1;
 				const updatePlan = {
 					plan_type: 'Car Rental',
-					plan_name: 'Hertz Newtown Square', 
-					start_date: '2019-04-05T20:00:00.000Z', 
-					end_date: '2019-04-05T21:00:00.000Z', 
-					description: 'test blah blah', 
-					plan_place_id: '19073', 
-					city_name: 'New City',
-					utc_offset_minutes: 240
+					plan_name: 'Test New Plan',
+					start_date: '2020-07-01T00:00:00.000Z',
+					end_date: '2020-07-03T00:00:00.000Z',
+					description: 'blah blah',
+					plan_place_id: '11078', 
+					city_name: 'Taipei',
+					utc_offset_minutes: 480,
+					plan_details: [
+						{
+							plan_subtype: 'Pick up',
+							from_name: 'ABC Store',
+							from_place_id: '123',
+							from_utc_offset_minutes: 480
+						},
+						{
+							plan_subtype: 'Drop off',
+							to_name: 'DEF Store',
+							to_place_id: '321',
+							to_utc_offset_minutes: 480
+						}
+					]
 				};
 
 				return supertest(app)
@@ -743,16 +816,27 @@ describe('Trips Endpoints', () => {
 					.send(updatePlan)
 					.expect(200)
 					.expect(res => {
-						expect(res.body.id).to.eql(planId);
-						expect(res.body.trip_id).to.eql(tripId);
-						expect(res.body.plan_type).to.eql(updatePlan.plan_type);
-						expect(res.body.plan_name).to.eql(updatePlan.plan_name);
-						expect(res.body.start_date).to.eql(updatePlan.start_date);
-						expect(res.body.end_date).to.eql(updatePlan.end_date);
-						expect(res.body.description).to.eql(updatePlan.description);
-						expect(res.body.plan_place_id).to.eql(updatePlan.plan_place_id);
-						expect(res.body.city_name).to.eql(updatePlan.city_name);
-						expect(res.body.utc_offset_minutes).to.eql(updatePlan.utc_offset_minutes);
+						res.body.forEach(p => {
+							expect(p.id).to.eql(planId);
+							expect(p).to.have.property('plan_detail_id');
+							expect(p.plan_type).to.eql(updatePlan.plan_type);
+							expect(p.plan_name).to.eql(updatePlan.plan_name);
+							expect(p.start_date).to.eql(updatePlan.start_date);
+							expect(p.end_date).to.eql(updatePlan.end_date);
+							expect(p.description).to.eql(updatePlan.description);
+							expect(p.plan_place_id).to.eql(updatePlan.plan_place_id);
+							expect(p.city_name).to.eql(updatePlan.city_name);
+							expect(p.utc_offset_minutes).to.eql(updatePlan.utc_offset_minutes);
+							expect(p.trip_id).to.eql(tripId);
+						})
+						expect(res.body[0].plan_subtype).to.eql(updatePlan.plan_details[0].plan_subtype);
+						expect(res.body[0].from_name).to.eql(updatePlan.plan_details[0].from_name);
+						expect(res.body[0].from_place_id).to.eql(updatePlan.plan_details[0].from_place_id);
+						expect(res.body[0].from_utc_offset_minutes).to.eql(updatePlan.plan_details[0].from_utc_offset_minutes);
+						expect(res.body[1].plan_subtype).to.eql(updatePlan.plan_details[1].plan_subtype);
+						expect(res.body[1].to_name).to.eql(updatePlan.plan_details[1].to_name);
+						expect(res.body[1].to_place_id).to.eql(updatePlan.plan_details[1].to_place_id);
+						expect(res.body[1].to_utc_offset_minutes).to.eql(updatePlan.plan_details[1].to_utc_offset_minutes);
 					})
 					.expect(res => {
 						db
@@ -773,7 +857,23 @@ describe('Trips Endpoints', () => {
 								const expectDate = new Date().toLocaleString();
 								const actualDate = new Date(row.date_modified).toLocaleString();
 								expect(actualDate).to.eql(expectDate);
-							})
+							});
+					})
+					.expect(res => {
+						db
+							.from('plan_details')
+							.select('*')
+							.where({ plan_id: planId })
+							.then(rows => {
+								expect(rows[0].plan_subtype).to.eql(updatePlan.plan_details[0].plan_subtype);
+								expect(rows[0].from_name).to.eql(updatePlan.plan_details[0].from_name);
+								expect(rows[0].from_place_id).to.eql(updatePlan.plan_details[0].from_place_id);
+								expect(rows[0].from_utc_offset_minutes).to.eql(updatePlan.plan_details[0].from_utc_offset_minutes);
+								expect(rows[1].plan_subtype).to.eql(updatePlan.plan_details[1].plan_subtype);
+								expect(rows[1].to_name).to.eql(updatePlan.plan_details[1].to_name);
+								expect(rows[1].to_place_id).to.eql(updatePlan.plan_details[1].to_place_id);
+								expect(rows[1].to_utc_offset_minutes).to.eql(updatePlan.plan_details[1].to_utc_offset_minutes);
+							});
 					});
 			})
 		})

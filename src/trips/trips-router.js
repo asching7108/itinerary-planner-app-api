@@ -129,7 +129,7 @@ TripsRouter
 	})
 
   .post(jsonBodyParser, (req, res, next) => {
-		const { 
+		const {
 			plan_type, 
 			plan_name, 
 			start_date, 
@@ -137,7 +137,8 @@ TripsRouter
 			description,  
 			plan_place_id, 
       city_name,
-      utc_offset_minutes
+			utc_offset_minutes,
+			plan_details
 		} = req.body;
 		let newPlan = { 
 			plan_type, 
@@ -165,13 +166,20 @@ TripsRouter
 
 		PlansService.insertPlan(
 			req.app.get('db'),
-			newPlan
+			newPlan,
+			plan_details
 		)
-			.then(plan => {
-				res
-					.status(201)
-					.location(`/api/trips/${plan.trip_id}/plans/${plan.id}`)
-					.json(PlansService.serializePlan(plan));
+			.then(([plan, planDetails]) => {
+				PlansService.getPlanById(
+					req.app.get('db'),
+					plan.id
+				)
+					.then(plans => {
+						res
+						.status(201)
+						.location(`/api/trips/${plan.trip_id}/plans/${plan.id}`)
+						.json(PlansService.serializePlans(plans));
+					})
 			})
 			.catch(next);
   })
@@ -187,8 +195,8 @@ TripsRouter
 			req.app.get('db'),
 			req.params.plan_id
 		)
-		.then(plan => {
-			res.json(PlansService.serializePlan(plan));
+		.then(plans => {
+			res.json(PlansService.serializePlans(plans));
 		})
 		.catch(next);
 	})
@@ -213,7 +221,8 @@ TripsRouter
 			end_date, 
 			description, 
 			city_name,
-			utc_offset_minutes 
+			utc_offset_minutes,
+			plan_details
 		} = req.body;
 		const planToUpdate = { 
 			plan_type, 
@@ -223,7 +232,8 @@ TripsRouter
 			end_date, 
 			description, 
 			city_name,
-			utc_offset_minutes 
+			utc_offset_minutes,
+			plan_details
 		 };
 
 		const numOfValues = Object.values(planToUpdate).filter(Boolean).length;
@@ -238,8 +248,8 @@ TripsRouter
 			req.params.plan_id,
 			planToUpdate
 		)
-			.then(plan => {
-				res.json(PlansService.serializePlan(plan));
+			.then(([plans, planDetails]) => {
+				res.json(PlansService.serializePlans(plans));
 			})
 			.catch(next);
 	})
@@ -273,18 +283,18 @@ async function checkTripExists(req, res, next) {
 
 async function checkPlanExists(req, res, next) {
 	try {
-		const plan = await PlansService.getPlanById(
+		const plans = await PlansService.getPlanById(
 			req.app.get('db'),
 			req.params.plan_id
 		);
-
-		if (!plan) {
+		
+		if (!plans.length) {
 			return res.status(404).json({
 				error: `Plan doesn't exist`
 			});
 		}
 
-		res.plan = plan;
+		res.plans = plans;
 		next();
 	}
 	catch (error) {

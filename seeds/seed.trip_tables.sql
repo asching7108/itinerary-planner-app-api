@@ -4,7 +4,8 @@ TRUNCATE
 	users,
 	trips,
 	trip_dest_cities,
-	trip_plans
+	trip_plans,
+	plan_details
 	RESTART IDENTITY CASCADE;
 
 /* 
@@ -30,10 +31,19 @@ VALUES
 
 INSERT INTO trip_plans (plan_type, plan_name, plan_place_id, start_date, end_date, description, trip_id, city_name, utc_offset_minutes)
 VALUES
-	('Flight', 'BR772', '', '2019-04-01T04:05:00.000Z', '2019-04-01T10:50:00.000Z', NULL, 1, 'Barcelona', 180),
-	('Lodging', 'H10 Metropolitan Hotel', '', '2019-04-01T13:00:00.000Z', '2019-04-05T09:00:00.000Z', NULL, 1, 'Barcelona', 180),
-	('Activity', 'La Sagrada Familia', '', '2019-04-02T10:00:00.000Z', '2019-04-02T14:00:00.000Z', 'Gaudis masterpiece', 1, 'Barcelona', 180),
-	('Restaurant', 'Lily Afternoon Tea', '', '2019-04-02T15:00:00.000Z', NULL, NULL, 1, 'Barcelona', 180),
-	('Restaurant', 'The Good Food', '', '2019-04-02T20:00:00.000Z', NULL, NULL, 1, 'Barcelona', 180);
+	('Flight', 'BR772', NULL, '2019-04-01T04:05:00.000Z', '2019-04-01T10:50:00.000Z', NULL, 1, 'Barcelona', 180),
+	('Lodging', 'H10 Metropolitan Hotel', NULL, '2019-04-01T13:00:00.000Z', '2019-04-05T09:00:00.000Z', NULL, 1, 'Barcelona', 180),
+	('Car Rental', 'Hertz', NULL, '2019-04-02T09:00:00.000Z', '2019-04-05T12:00:00.000Z', NULL, 1, 'Barcelona', 180),
+	('Activity', 'La Sagrada Familia', NULL, '2019-04-02T10:00:00.000Z', '2019-04-02T14:00:00.000Z', 'Gaudis masterpiece', 1, 'Barcelona', 180),
+	('Restaurant', 'Lily Afternoon Tea', NULL, '2019-04-02T15:00:00.000Z', NULL, NULL, 1, 'Barcelona', 180),
+	('Restaurant', 'The Good Food', NULL, '2019-04-02T20:00:00.000Z', NULL, NULL, 1, 'Barcelona', 180);
+
+INSERT INTO plan_details (plan_subtype, from_name, from_place_id, from_utc_offset_minutes, to_name, to_place_id, to_utc_offset_minutes, plan_id)
+VALUES
+	(NULL, 'TPE', 'Taipei', 640, 'BCN', 'Barcelona', 180, 1),
+	('Check in', NULL, NULL, NULL, NULL, NULL, NULL, 2),
+	('Check out', NULL, NULL, NULL, NULL, NULL, NULL, 2),
+	('Pick up', 'Hertz ABC store', '123', 180, NULL, NULL, NULL, 3),
+	('Drop off', NULL, NULL, NULL, 'Hertz DEF store', '456', 180, 3);
 
 COMMIT;

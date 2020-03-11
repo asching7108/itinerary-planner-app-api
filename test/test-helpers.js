@@ -142,7 +142,11 @@ function makePlansArray() {
 			description: '',
 			trip_id: 1,
 			city_name: 'Barcelona',
-			utc_offset_minutes: 180
+			utc_offset_minutes: 180,
+			plan_details: [{
+				from_name: 'TPE',
+				to_name: 'BCN'
+			}]
 		},
 		{
 			id: 2,
@@ -153,7 +157,11 @@ function makePlansArray() {
 			description: '',
 			trip_id: 1,
 			city_name: 'Barcelona',
-			utc_offset_minutes: 180
+			utc_offset_minutes: 180,
+			plan_details: [
+				{ plan_subtype: 'Check in' },
+				{ plan_subtype: 'Check out' }
+			]
 		},
 		{
 			id: 3,
@@ -181,6 +189,27 @@ function makePlansArray() {
 	];
 }
 
+function makePlanDetailsArray() {
+	return [
+		{
+			id: 1,
+			from_name: 'TPE',
+			to_name: 'BCN',
+			plan_id: 1
+		},
+		{
+			id: 2,
+			plan_subtype: 'Check in',
+			plan_id: 2
+		},
+		{
+			id: 3,
+			plan_subtype: 'Check out',
+			plan_id: 2
+		}
+	];
+}
+
 function makeExpectedTrips(trips, destCities) {
 	return trips.map(t => makeExpectedTrip(t, destCities));
 }
@@ -197,12 +226,67 @@ function makeExpectedTrip(trip, destCities) {
 	return expectedTrip;
 }
 
+function makeExpectedPlans(plans, planDetails) {
+	const expectedPlans = [];
+	plans.forEach(plan => {
+		const plansById = makeExpectedPlan(plan, planDetails);
+		plansById.forEach(p => {
+			expectedPlans.push(p);
+		})
+	})
+
+	expectedPlans.sort(function(a, b) {
+		return new Date(a.comparable_date) - new Date(b.comparable_date);
+	});
+
+	return expectedPlans;
+}
+
+function makeExpectedPlan(plan, planDetails) {
+	delete plan.plan_details;
+	const planDetailsForPlan = planDetails
+		.filter(pd => pd.plan_id === plan.id);
+
+	const expectedPlans = [];
+
+	if (planDetailsForPlan.length) {
+		planDetailsForPlan.forEach(pd => {
+			const comparable_date = (
+				pd.plan_subtype === 'Check out' || 
+				pd.plan_subtype === 'Drop off'
+			)
+				? plan.end_date
+				: plan.start_date;
+
+			const expectedPlan = {
+				plan_detail_id: pd.id,
+				...pd,
+				...plan,
+				comparable_date
+			};
+
+			delete expectedPlan.plan_id;
+
+			expectedPlans.push(expectedPlan);
+		})
+	}
+	else {
+		expectedPlans.push({
+			...plan,
+			comparable_date: plan.start_date
+		});
+	}
+
+	return expectedPlans;
+}
+
 function makeTripsFixtures() {
 	const testUsers = makeUsersArray();
 	const testTrips = makeTripsArray();
 	const testDestCities = makeDestCitiesArray();
 	const testPlans = makePlansArray();
-	return { testUsers, testTrips, testDestCities, testPlans };
+	const testPlanDetails = makePlanDetailsArray();
+	return { testUsers, testTrips, testDestCities, testPlans, testPlanDetails };
 }
 
 function cleanTables(db) {
@@ -211,7 +295,8 @@ function cleanTables(db) {
 			users,
 			trips,
 			trip_dest_cities,
-			trip_plans
+			trip_plans,
+			plan_details
 			RESTART IDENTITY CASCADE`
 	);
 }
@@ -232,10 +317,14 @@ function seedUsers(db, users) {
 		);
 }
 
-function seedTripsTables(db, users, trips, destCities, plans) {
+function seedTripsTables(db, users, trips, destCities, plans, planDetails) {
 	trips = trips.map(trip => {
 		delete trip.dest_cities;
 		return trip;
+	});
+	plans = plans.map(plan => {
+		delete plan.plan_details;
+		return plan;
 	});
 
 	return db.transaction(async trx => {		
@@ -244,23 +333,30 @@ function seedTripsTables(db, users, trips, destCities, plans) {
 			.then(() => 
 				trx.raw(
 					`SELECT setval('trips_id_seq', ?)`,
-					[trips[trips.length - 1].id],
+					[trips[trips.length - 1].id]
 				)
 			);
 		await trx.into('trip_dest_cities').insert(destCities)
 			.then(() => 
 				trx.raw(
 					`SELECT setval('trip_dest_cities_id_seq', ?)`,
-					[destCities[destCities.length - 1].id],
+					[destCities[destCities.length - 1].id]
 				)
 			);
 		await trx.into('trip_plans').insert(plans)
 			.then(() => 
-					trx.raw(
-						`SELECT setval('trip_plans_id_seq', ?)`,
-						[plans[plans.length - 1].id],
-					)
-			)
+				trx.raw(
+					`SELECT setval('trip_plans_id_seq', ?)`,
+					[plans[plans.length - 1].id]
+				)
+			);
+		await trx.into('plan_details').insert(planDetails)
+			.then(() => 
+				trx.raw(
+					`SELECT setval('plan_details_id_seq', ?)`,
+					[planDetails[planDetails.length - 1].id]
+				)
+			);
 	});
 }
 
@@ -277,8 +373,11 @@ module.exports = {
 	makeTripsArray,
 	makeDestCitiesArray,
 	makePlansArray,
+	makePlanDetailsArray,
 	makeExpectedTrips,
 	makeExpectedTrip,
+	makeExpectedPlans,
+	makeExpectedPlan,
 	makeTripsFixtures,
 	cleanTables,
 	seedUsers,

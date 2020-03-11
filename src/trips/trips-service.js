@@ -79,8 +79,8 @@ const TripsService = {
 					return dc;
 				});
 
-				return TripsService.insertDestCities(db, newDestCities);
-			})
+				return this.insertDestCities(db, newDestCities);
+			});
 
 		return Promise.all([resTrip, resDestCities]);
 	},
@@ -120,16 +120,16 @@ const TripsService = {
 	updateTripById(db, trip_id, updateTrip) {
 		const { dest_cities } = updateTrip;
 
-		let resDestCities = [];
+		let resDestCities;
 		if (dest_cities) {
 			delete updateTrip['dest_cities'];
-			resDestCities = TripsService.deleteDestCitiesByTrip(db, trip_id)
+			resDestCities = this.deleteDestCitiesByTrip(db, trip_id)
 				.then(() => {
 					dest_cities.map(dc => {
 						dc.trip_id = trip_id;
 						return dc;
 					})
-					return TripsService.insertDestCities(db, dest_cities);
+					return this.insertDestCities(db, dest_cities);
 				});
 		}
 
@@ -139,7 +139,7 @@ const TripsService = {
 			.where('id', trip_id)
 			.then(() => 
 				db.raw(`UPDATE trips SET date_modified = now() AT TIME ZONE 'UTC' WHERE id = ${trip_id}`)
-					.then(() => TripsService.getTripById(db, trip_id))
+					.then(() => this.getTripById(db, trip_id))
 			);
 
 		return Promise.all([resTrip, resDestCities]);
