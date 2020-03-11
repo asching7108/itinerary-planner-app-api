@@ -1,10 +1,10 @@
 const knex = require('knex');
 const app = require('./App');
-const { PORT, DB_URL } = require('./config');
+const { PORT, DATABASE_URL } = require('./config');
 
 const db = knex({
 	client: 'pg',
-	connection: DB_URL,
+	connection: DATABASE_URL,
 	pool: {
 		afterCreate: function(connection, callback) {
 			connection.query(`SET TIME ZONE 'PST8PDT'`, function(err) {

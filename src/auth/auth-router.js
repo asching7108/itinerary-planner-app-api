@@ -17,6 +17,7 @@ AuthRouter
 				});
 			}
 		}
+		console.log('here');
 		
 		AuthService.getUserWithEmail(
 			req.app.get('db'),
@@ -44,7 +45,10 @@ AuthRouter
 						});
 					})
 			})
-			.catch(next);
+			.catch(err => {
+				console.log(err)
+				next();
+			});
 	})
 
 	.post('/refresh', requireAuth, (req, res) => {
