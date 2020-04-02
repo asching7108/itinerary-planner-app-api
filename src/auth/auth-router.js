@@ -17,7 +17,6 @@ AuthRouter
 				});
 			}
 		}
-		console.log('here');
 		
 		AuthService.getUserWithEmail(
 			req.app.get('db'),

@@ -169,7 +169,7 @@ TripsRouter
 			newPlan,
 			plan_details
 		)
-			.then(([plan, planDetails]) => {
+			.then(([plan, planDetails, trip]) => {
 				PlansService.getPlanById(
 					req.app.get('db'),
 					plan.id
@@ -179,7 +179,7 @@ TripsRouter
 						.status(201)
 						.location(`/api/trips/${plan.trip_id}/plans/${plan.id}`)
 						.json(PlansService.serializePlans(plans));
-					})
+					});
 			})
 			.catch(next);
   })
@@ -248,7 +248,7 @@ TripsRouter
 			req.params.plan_id,
 			planToUpdate
 		)
-			.then(([plans, planDetails]) => {
+			.then(([plans, planDetails, trip]) => {
 				res.json(PlansService.serializePlans(plans));
 			})
 			.catch(next);

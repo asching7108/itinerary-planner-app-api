@@ -26,10 +26,6 @@ app.use('/api/users', UsersRouter);
 
 /* error handler */
 app.use((error, req, res, next) => {
-	console.log('app');
-	console.log('app2');
-	
-	
 	let response;
 	if (NODE_ENV === 'production') {
 		response = { error: { message: 'server error' }};

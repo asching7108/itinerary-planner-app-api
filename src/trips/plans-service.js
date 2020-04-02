@@ -1,5 +1,7 @@
 const xss = require('xss');
 const Treeize = require('treeize');
+const moment = require('moment');
+const TripsService = require('./trips-service');
 
 const PlansService = {
 	getAllPlans(db) {
@@ -64,11 +66,13 @@ const PlansService = {
 						return pd;
 					});
 				}
-
 				return this.insertPlanDetails(db, newPlanDetails);
 			});
 
-		return Promise.all([resPlan, resPlanDetails]);
+		const resTrip = await resPlan
+			.then(plan => this.updateTripDateByPlan(db, plan));
+
+		return Promise.all([resPlan, resPlanDetails, resTrip]);
 	},
 
 	async deletePlanById(db, plan_id) {
@@ -90,10 +94,10 @@ const PlansService = {
 
 	insertPlanDetails(db, newPlanDetails) {
 		return db
-		.into('plan_details')
-		.insert(newPlanDetails)
-		.returning('*')
-		.then(planDetails => planDetails);
+			.into('plan_details')
+			.insert(newPlanDetails)
+			.returning('*')
+			.then(planDetails => planDetails);
 	},
 
 	deletePlanDetailsByPlan(db, plan_id) {
@@ -105,11 +109,11 @@ const PlansService = {
 	
 	async updatePlanById(db, plan_id, updatePlan) {
 		const { plan_details } = updatePlan;
+		delete updatePlan['plan_details'];
 
 		const resPlanDetails = this.deletePlanDetailsByPlan(db, plan_id)
 			.then(res => {
 				if (plan_details) {
-					delete updatePlan['plan_details'];
 					plan_details.map(pd => {
 						pd.plan_id = plan_id;
 						return pd;
@@ -119,19 +123,46 @@ const PlansService = {
 				return res;
 			});
 
-		const resPlans = await resPlanDetails
+		const resPlans = db
+			.from('trip_plans')
+			.update(updatePlan)
+			.where('id', plan_id)
 			.then(() => 
-				db
-					.from('trip_plans')
-					.update(updatePlan)
-					.where('id', plan_id)
-					.then(() => 
-						db.raw(`UPDATE trip_plans SET date_modified = now() AT TIME ZONE 'UTC' WHERE id = ${plan_id}`)
-							.then(() => this.getPlanById(db, plan_id))
-					)
+				db.raw(`UPDATE trip_plans SET date_modified = now() AT TIME ZONE 'UTC' WHERE id = ${plan_id}`)
+					.then(() => this.getPlanById(db, plan_id))
 			);
+			
+		const resTrip = await resPlans
+			.then(plans => this.updateTripDateByPlan(db, plans[0]));
 
-		return Promise.all([resPlans, resPlanDetails]);
+		return Promise.all([resPlans, resPlanDetails, resTrip]);
+	},
+
+	updateTripDateByPlan(db, plan) {
+		return TripsService.getTripById(db, plan.trip_id)
+			.then(trip => {
+				const need_s_date_update = moment(trip.start_date).diff(plan.start_date, 'days') > 0;
+				const need_e_date_update = moment(trip.end_date).diff(plan.end_date, 'days') < 0;
+				
+				trip.start_date = need_s_date_update 
+					? moment(plan.start_date).utc().startOf('day').format()
+					: trip.start_date;
+
+				trip.end_date = need_e_date_update
+					? moment(plan.end_date).utc().startOf('day').format()
+					: trip.end_date;
+
+				if (need_s_date_update || need_e_date_update) {
+					return TripsService.updateTripById(db, trip.id, trip);
+				}
+				else {
+					return this.emptyPromise();
+				}
+			});
+	},
+
+	emptyPromise(val = null) {
+		return new Promise(resolve => resolve(val));
 	},
 	
 	serializePlans(plans) {
