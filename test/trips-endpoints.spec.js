@@ -180,12 +180,19 @@ describe('Trips Endpoints', () => {
 					{
 						city_name: 'New York',
 						city_place_id: '123456',
-						utc_offset_minutes: -240
+						utc_offset_minutes: -240,
+						viewport: {
+							ne_lat: 41.4695761,
+							ne_lng: 2.2280099,
+							sw_lat: 41.3200040,
+							sw_lng: 2.0695258
+						}
 					},
 					{
 						city_name: 'Philadelphia',
 						city_place_id: '654321',
-						utc_offset_minutes: -240
+						utc_offset_minutes: -240,
+						viewport: {}
 					}
 				],
 				start_date: '2020-07-01T00:00:00.000Z',
@@ -212,6 +219,10 @@ describe('Trips Endpoints', () => {
 						expect(dc.city_name).to.eql(newTrip.dest_cities[idx].city_name);
 						expect(dc.city_place_id).to.eql(newTrip.dest_cities[idx].city_place_id);
 						expect(dc.utc_offset_minutes).to.eql(newTrip.dest_cities[idx].utc_offset_minutes);
+						expect(dc.viewport.ne_lat).to.eql(newTrip.dest_cities[idx].viewport.ne_lat);
+						expect(dc.viewport.ne_lng).to.eql(newTrip.dest_cities[idx].viewport.ne_lng);
+						expect(dc.viewport.sw_lat).to.eql(newTrip.dest_cities[idx].viewport.sw_lat);
+						expect(dc.viewport.sw_lng).to.eql(newTrip.dest_cities[idx].viewport.sw_lng);
 					})
 				})
 				.expect(res => {
@@ -241,6 +252,10 @@ describe('Trips Endpoints', () => {
 								expect(row.city_name).to.eql(newTrip.dest_cities[idx].city_name);
 								expect(row.city_place_id).to.eql(newTrip.dest_cities[idx].city_place_id);
 								expect(row.utc_offset_minutes).to.eql(newTrip.dest_cities[idx].utc_offset_minutes);
+								expect(Number(row.ne_lat)).to.eql(newTrip.dest_cities[idx].viewport.ne_lat || 0);
+								expect(Number(row.ne_lng)).to.eql(newTrip.dest_cities[idx].viewport.ne_lng || 0);
+								expect(Number(row.sw_lat)).to.eql(newTrip.dest_cities[idx].viewport.sw_lat || 0);
+								expect(Number(row.sw_lng)).to.eql(newTrip.dest_cities[idx].viewport.sw_lng || 0);
 							})
 						})
 				});
@@ -326,7 +341,13 @@ describe('Trips Endpoints', () => {
 						{
 							city_name: 'Taipei',
 							city_place_id: '654321',
-							utc_offset_minutes: 480
+							utc_offset_minutes: 480,
+							viewport: {
+								ne_lat: 41.4695761,
+								ne_lng: 2.2280099,
+								sw_lat: 41.3200040,
+								sw_lng: 2.0695258
+							}
 						}
 					],
 					start_date: '2021-07-01T00:00:00.000Z',
@@ -355,6 +376,10 @@ describe('Trips Endpoints', () => {
 							expect(dc.city_name).to.eql(updateTrip.dest_cities[idx].city_name);
 							expect(dc.city_place_id).to.eql(updateTrip.dest_cities[idx].city_place_id);
 							expect(dc.utc_offset_minutes).to.eql(updateTrip.dest_cities[idx].utc_offset_minutes);
+							expect(dc.viewport.ne_lat).to.eql(updateTrip.dest_cities[idx].viewport.ne_lat);
+							expect(dc.viewport.ne_lng).to.eql(updateTrip.dest_cities[idx].viewport.ne_lng);
+							expect(dc.viewport.sw_lat).to.eql(updateTrip.dest_cities[idx].viewport.sw_lat);
+							expect(dc.viewport.sw_lng).to.eql(updateTrip.dest_cities[idx].viewport.sw_lng);
 						})
 					})
 					.expect(res => {
@@ -384,6 +409,10 @@ describe('Trips Endpoints', () => {
 									expect(row.city_name).to.eql(updateTrip.dest_cities[idx].city_name);
 									expect(row.city_place_id).to.eql(updateTrip.dest_cities[idx].city_place_id);
 									expect(row.utc_offset_minutes).to.eql(updateTrip.dest_cities[idx].utc_offset_minutes);
+									expect(Number(row.ne_lat)).to.eql(updateTrip.dest_cities[idx].viewport.ne_lat || 0);
+									expect(Number(row.ne_lng)).to.eql(updateTrip.dest_cities[idx].viewport.ne_lng || 0);
+									expect(Number(row.sw_lat)).to.eql(updateTrip.dest_cities[idx].viewport.sw_lat || 0);
+									expect(Number(row.sw_lng)).to.eql(updateTrip.dest_cities[idx].viewport.sw_lng || 0);
 								})
 							})
 					});
@@ -569,18 +598,26 @@ describe('Trips Endpoints', () => {
 				plan_place_id: '11078', 
 				city_name: 'Taipei',
 				utc_offset_minutes: 480,
+				formatted_address: 'Rambla de Catalunya, 7, 08007 Barcelona, Spain',
+				international_phone_number: '+34 932 14 07 20',
+				website: 'https://test.com',
 				plan_details: [
 					{
 						plan_subtype: 'Pick up',
 						from_name: 'ABC Store',
 						from_place_id: '123',
-						from_utc_offset_minutes: 480
+						from_utc_offset_minutes: 480,
+						from_formatted_address: 'R, Borgo Ognissanti, 100, 50123 Firenze FI, Italy',
+						from_international_phone_number: '+39 055 213333',
+						from_website: 'http://www.sbc.it/'
 					},
 					{
 						plan_subtype: 'Drop off',
 						to_name: 'DEF Store',
 						to_place_id: '321',
-						to_utc_offset_minutes: 480
+						to_utc_offset_minutes: 480,to_formatted_address: 'R, Borgo Ognissanti, 100, 50123 Firenze FI, Italy',
+						to_international_phone_number: '+39 055 213333',
+						to_website: 'http://www.sbc.it/'
 					}
 				]
 			};
@@ -602,16 +639,25 @@ describe('Trips Endpoints', () => {
 						expect(p.plan_place_id).to.eql(newPlan.plan_place_id);
 						expect(p.city_name).to.eql(newPlan.city_name);
 						expect(p.utc_offset_minutes).to.eql(newPlan.utc_offset_minutes);
+						expect(p.formatted_address).to.eql(newPlan.formatted_address);
+						expect(p.international_phone_number).to.eql(newPlan.international_phone_number);
+						expect(p.website).to.eql(newPlan.website);
 						expect(p.trip_id).to.eql(tripId);
 					})
 					expect(res.body[0].plan_subtype).to.eql(newPlan.plan_details[0].plan_subtype);
 					expect(res.body[0].from_name).to.eql(newPlan.plan_details[0].from_name);
 					expect(res.body[0].from_place_id).to.eql(newPlan.plan_details[0].from_place_id);
 					expect(res.body[0].from_utc_offset_minutes).to.eql(newPlan.plan_details[0].from_utc_offset_minutes);
+					expect(res.body[0].from_formatted_address).to.eql(newPlan.plan_details[0].from_formatted_address);
+					expect(res.body[0].from_international_phone_number).to.eql(newPlan.plan_details[0].from_international_phone_number);
+					expect(res.body[0].from_website).to.eql(newPlan.plan_details[0].from_website);
 					expect(res.body[1].plan_subtype).to.eql(newPlan.plan_details[1].plan_subtype);
 					expect(res.body[1].to_name).to.eql(newPlan.plan_details[1].to_name);
 					expect(res.body[1].to_place_id).to.eql(newPlan.plan_details[1].to_place_id);
 					expect(res.body[1].to_utc_offset_minutes).to.eql(newPlan.plan_details[1].to_utc_offset_minutes);
+					expect(res.body[1].to_formatted_address).to.eql(newPlan.plan_details[1].to_formatted_address);
+					expect(res.body[1].to_international_phone_number).to.eql(newPlan.plan_details[1].to_international_phone_number);
+					expect(res.body[1].to_website).to.eql(newPlan.plan_details[1].to_website);
 					expect(res.headers.location).to.eql(`/api/trips/${res.body[0].trip_id}/plans/${res.body[0].id}`);
 				})
 				.expect(res => {
@@ -629,6 +675,9 @@ describe('Trips Endpoints', () => {
 							expect(row.plan_place_id).to.eql(newPlan.plan_place_id);
 							expect(row.city_name).to.eql(newPlan.city_name);
 							expect(row.utc_offset_minutes).to.eql(newPlan.utc_offset_minutes);
+							expect(row.formatted_address).to.eql(newPlan.formatted_address);
+							expect(row.international_phone_number).to.eql(newPlan.international_phone_number);
+							expect(row.website).to.eql(newPlan.website);
 							expect(row.trip_id).to.eql(tripId);
 							const expectDate = new Date().toLocaleString();
 							const actualDate = new Date(row.date_created).toLocaleString();
@@ -645,10 +694,16 @@ describe('Trips Endpoints', () => {
 							expect(rows[0].from_name).to.eql(newPlan.plan_details[0].from_name);
 							expect(rows[0].from_place_id).to.eql(newPlan.plan_details[0].from_place_id);
 							expect(rows[0].from_utc_offset_minutes).to.eql(newPlan.plan_details[0].from_utc_offset_minutes);
+							expect(rows[0].from_formatted_address).to.eql(newPlan.plan_details[0].from_formatted_address);
+							expect(rows[0].from_international_phone_number).to.eql(newPlan.plan_details[0].from_international_phone_number);
+							expect(rows[0].from_website).to.eql(newPlan.plan_details[0].from_website);
 							expect(rows[1].plan_subtype).to.eql(newPlan.plan_details[1].plan_subtype);
 							expect(rows[1].to_name).to.eql(newPlan.plan_details[1].to_name);
 							expect(rows[1].to_place_id).to.eql(newPlan.plan_details[1].to_place_id);
 							expect(rows[1].to_utc_offset_minutes).to.eql(newPlan.plan_details[1].to_utc_offset_minutes);
+							expect(rows[1].to_formatted_address).to.eql(newPlan.plan_details[1].to_formatted_address);
+							expect(rows[1].to_international_phone_number).to.eql(newPlan.plan_details[1].to_international_phone_number);
+							expect(rows[1].to_website).to.eql(newPlan.plan_details[1].to_website);
 						});
 				});
 		})
@@ -794,18 +849,26 @@ describe('Trips Endpoints', () => {
 					plan_place_id: '11078', 
 					city_name: 'Taipei',
 					utc_offset_minutes: 480,
+					formatted_address: 'Rambla de Catalunya, 7, 08007 Barcelona, Spain',
+					international_phone_number: '+34 932 14 07 20',
+					website: 'https://test.com',
 					plan_details: [
 						{
 							plan_subtype: 'Pick up',
 							from_name: 'ABC Store',
 							from_place_id: '123',
-							from_utc_offset_minutes: 480
+							from_utc_offset_minutes: 480,
+							from_formatted_address: 'R, Borgo Ognissanti, 100, 50123 Firenze FI, Italy',
+							from_international_phone_number: '+39 055 213333',
+							from_website: 'http://www.sbc.it/'
 						},
 						{
 							plan_subtype: 'Drop off',
 							to_name: 'DEF Store',
 							to_place_id: '321',
-							to_utc_offset_minutes: 480
+							to_utc_offset_minutes: 480,to_formatted_address: 'R, Borgo Ognissanti, 100, 50123 Firenze FI, Italy',
+							to_international_phone_number: '+39 055 213333',
+							to_website: 'http://www.sbc.it/'
 						}
 					]
 				};
@@ -827,16 +890,25 @@ describe('Trips Endpoints', () => {
 							expect(p.plan_place_id).to.eql(updatePlan.plan_place_id);
 							expect(p.city_name).to.eql(updatePlan.city_name);
 							expect(p.utc_offset_minutes).to.eql(updatePlan.utc_offset_minutes);
+							expect(p.formatted_address).to.eql(updatePlan.formatted_address);
+							expect(p.international_phone_number).to.eql(updatePlan.international_phone_number);
+							expect(p.website).to.eql(updatePlan.website);
 							expect(p.trip_id).to.eql(tripId);
 						})
 						expect(res.body[0].plan_subtype).to.eql(updatePlan.plan_details[0].plan_subtype);
 						expect(res.body[0].from_name).to.eql(updatePlan.plan_details[0].from_name);
 						expect(res.body[0].from_place_id).to.eql(updatePlan.plan_details[0].from_place_id);
 						expect(res.body[0].from_utc_offset_minutes).to.eql(updatePlan.plan_details[0].from_utc_offset_minutes);
+						expect(res.body[0].from_formatted_address).to.eql(updatePlan.plan_details[0].from_formatted_address);
+						expect(res.body[0].from_international_phone_number).to.eql(updatePlan.plan_details[0].from_international_phone_number);
+						expect(res.body[0].from_website).to.eql(updatePlan.plan_details[0].from_website);
 						expect(res.body[1].plan_subtype).to.eql(updatePlan.plan_details[1].plan_subtype);
 						expect(res.body[1].to_name).to.eql(updatePlan.plan_details[1].to_name);
 						expect(res.body[1].to_place_id).to.eql(updatePlan.plan_details[1].to_place_id);
 						expect(res.body[1].to_utc_offset_minutes).to.eql(updatePlan.plan_details[1].to_utc_offset_minutes);
+						expect(res.body[1].to_formatted_address).to.eql(updatePlan.plan_details[1].to_formatted_address);
+						expect(res.body[1].to_international_phone_number).to.eql(updatePlan.plan_details[1].to_international_phone_number);
+						expect(res.body[1].to_website).to.eql(updatePlan.plan_details[1].to_website);
 					})
 					.expect(res => {
 						db
@@ -853,6 +925,9 @@ describe('Trips Endpoints', () => {
 								expect(row.plan_place_id).to.eql(updatePlan.plan_place_id);
 								expect(row.city_name).to.eql(updatePlan.city_name);
 								expect(row.utc_offset_minutes).to.eql(updatePlan.utc_offset_minutes);
+								expect(row.formatted_address).to.eql(updatePlan.formatted_address);
+								expect(row.international_phone_number).to.eql(updatePlan.international_phone_number);
+								expect(row.website).to.eql(updatePlan.website);
 								expect(row.trip_id).to.eql(tripId);
 								const expectDate = new Date().toLocaleString();
 								const actualDate = new Date(row.date_modified).toLocaleString();
@@ -869,10 +944,16 @@ describe('Trips Endpoints', () => {
 								expect(rows[0].from_name).to.eql(updatePlan.plan_details[0].from_name);
 								expect(rows[0].from_place_id).to.eql(updatePlan.plan_details[0].from_place_id);
 								expect(rows[0].from_utc_offset_minutes).to.eql(updatePlan.plan_details[0].from_utc_offset_minutes);
+								expect(rows[0].from_formatted_address).to.eql(updatePlan.plan_details[0].from_formatted_address);
+								expect(rows[0].from_international_phone_number).to.eql(updatePlan.plan_details[0].from_international_phone_number);
+								expect(rows[0].from_website).to.eql(updatePlan.plan_details[0].from_website);
 								expect(rows[1].plan_subtype).to.eql(updatePlan.plan_details[1].plan_subtype);
 								expect(rows[1].to_name).to.eql(updatePlan.plan_details[1].to_name);
 								expect(rows[1].to_place_id).to.eql(updatePlan.plan_details[1].to_place_id);
 								expect(rows[1].to_utc_offset_minutes).to.eql(updatePlan.plan_details[1].to_utc_offset_minutes);
+								expect(rows[1].to_formatted_address).to.eql(updatePlan.plan_details[1].to_formatted_address);
+								expect(rows[1].to_international_phone_number).to.eql(updatePlan.plan_details[1].to_international_phone_number);
+								expect(rows[1].to_website).to.eql(updatePlan.plan_details[1].to_website);
 							});
 					});
 			})

@@ -15,6 +15,10 @@ CREATE TABLE trip_dest_cities (
 	city_name TEXT NOT NULL,
 	city_place_id TEXT NOT NULL,
 	utc_offset_minutes INTEGER NOT NULL,
+	ne_lat NUMERIC (10, 7),
+	ne_lng NUMERIC (10, 7),
+	sw_lat NUMERIC (10, 7),
+	sw_lng NUMERIC (10, 7),
 	trip_id INTEGER
 		REFERENCES trips(id) ON DELETE CASCADE NOT NULL
 );

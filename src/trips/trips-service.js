@@ -35,6 +35,10 @@ const TripsService = {
 				'dc.city_name',
 				'dc.city_place_id',
 				'dc.utc_offset_minutes',
+				'dc.ne_lat',
+				'dc.ne_lng',
+				'dc.sw_lat',
+				'dc.sw_lng',
 				't.id AS trip_id'
 			)
 			.innerJoin(
@@ -62,7 +66,6 @@ const TripsService = {
 			.where('u.id', user_id);
 
 		return Promise.all([resTrips, resDestCities]);
-		
 	},
 
 	async insertTrip(db, newTrip, destCities) {
@@ -74,8 +77,13 @@ const TripsService = {
 		
 		const resDestCities = await resTrip
 			.then(trip => {
-				newDestCities = destCities.map(dc => {
-					dc.trip_id = trip.id;
+				const newDestCities = destCities.map(dc => {
+					dc = {
+						trip_id: trip.id,
+						...dc.viewport,
+						...dc
+					};
+					delete dc.viewport;
 					return dc;
 				});
 
@@ -125,11 +133,17 @@ const TripsService = {
 			delete updateTrip['dest_cities'];
 			resDestCities = this.deleteDestCitiesByTrip(db, trip_id)
 				.then(() => {
-					dest_cities.map(dc => {
-						dc.trip_id = trip_id;
+					const destCities = dest_cities.map(dc => {
+						dc = {
+							...dc,
+							trip_id,
+							...dc.viewport
+						};
+						delete dc.viewport;
 						return dc;
 					})
-					return this.insertDestCities(db, dest_cities);
+					
+					return this.insertDestCities(db, destCities);
 				});
 		}
 
@@ -175,7 +189,16 @@ const TripsService = {
 
 		const tripData = tripTree.grow([ trip ]).getData()[0];
 		const destCitiesData = destCitiesTree.grow(destCities).getData();
-
+		
+		const dest_cities = destCitiesData.map(dc => {
+			const viewport = {};
+			['ne_lat', 'ne_lng', 'sw_lat', 'sw_lng'].forEach(ele => {
+				if (dc[ele]) { viewport[ele] = Number(dc[ele]) };
+				delete dc[ele];
+			})
+			return { ...dc, viewport };
+		});
+		
 		return {
 			id: tripData.id,
 			trip_name: xss(tripData.trip_name),
@@ -183,7 +206,7 @@ const TripsService = {
 			end_date: tripData.end_date,
 			description: xss(tripData.description),
 			user_id: tripData.user_id,
-			dest_cities: destCitiesData
+			dest_cities
 		};
 	}
 }

@@ -43,17 +43,25 @@ function makeTripsArray() {
 				{
 					city_name: 'Barcelona',
 					city_place_id: '123',
-					utc_offset_minutes: 180
+					utc_offset_minutes: 180,
+					viewport: {
+						ne_lat: 41.4695761,
+						ne_lng: 2.2280099,
+						sw_lat: 41.3200040,
+						sw_lng: 2.0695258
+					}
 				},
 				{
 					city_name: 'Florence',
 					city_place_id: '456',
-					utc_offset_minutes: 180
+					utc_offset_minutes: 180,
+					viewport: {}
 				},
 				{
 					city_name: 'Rome',
 					city_place_id: '789',
-					utc_offset_minutes: 180
+					utc_offset_minutes: 180, 
+					viewport: {}
 				}
 			],
 			start_date: '2019-04-01T00:00:00.000Z',
@@ -69,7 +77,8 @@ function makeTripsArray() {
 				{
 					city_name: 'Tokyo',
 					city_place_id: '321',
-					utc_offset_minutes: 720
+					utc_offset_minutes: 720,
+					viewport: {}
 				}
 			],
 			start_date: '2019-04-30T00:00:00.000Z',
@@ -85,7 +94,8 @@ function makeTripsArray() {
 				{
 					city_name: 'New York',
 					city_place_id: '123456',
-					utc_offset_minutes: -240
+					utc_offset_minutes: -240,
+					viewport: {}
 				}
 			],
 			start_date: '2019-04-30T00:00:00.000Z',
@@ -104,28 +114,45 @@ function makeDestCitiesArray() {
 			city_name: 'Barcelona',
 			city_place_id: '123',
 			utc_offset_minutes: 180,
-			trip_id: 1
+			trip_id: 1,
+			viewport: {
+				ne_lat: 41.4695761,
+				ne_lng: 2.2280099,
+				sw_lat: 41.3200040,
+				sw_lng: 2.0695258
+			}
 		},
 		{
 			id: 2,
 			city_name: 'Florence',
 			city_place_id: '456',
 			utc_offset_minutes: 180,
-			trip_id: 1
+			trip_id: 1,
+			viewport: {}
 		},
 		{
 			id: 3,
 			city_name: 'Rome',
 			city_place_id: '789',
 			utc_offset_minutes: 180,
-			trip_id: 1
+			trip_id: 1,
+			viewport: {}
 		},
 		{
 			id: 4,
 			city_name: 'Tokyo',
 			city_place_id: '321',
 			utc_offset_minutes: 720,
-			trip_id: 2
+			trip_id: 2,
+			viewport: {}
+		},
+		{
+			id: 5,
+			city_name: 'New York',
+			city_place_id: '123456',
+			utc_offset_minutes: -240,
+			trip_id: 3,
+			viewport: {}
 		}
 	]
 }
@@ -143,6 +170,9 @@ function makePlansArray() {
 			trip_id: 1,
 			city_name: 'Barcelona',
 			utc_offset_minutes: 180,
+			formatted_address: '',
+			international_phone_number: '',
+			website: '',
 			plan_details: [{
 				from_name: 'TPE',
 				to_name: 'BCN'
@@ -158,6 +188,9 @@ function makePlansArray() {
 			trip_id: 1,
 			city_name: 'Barcelona',
 			utc_offset_minutes: 180,
+			formatted_address: 'Rambla de Catalunya, 7, 08007 Barcelona, Spain',
+			international_phone_number: '+34 932 14 07 20',
+			website: 'https://www.h10hotels.com/en/barcelona-hotels/h10-metropolitan?utm_source=Google%20My%20Business&utm_medium=Boton%20sitio%20web&utm_campaign=HME',
 			plan_details: [
 				{ plan_subtype: 'Check in' },
 				{ plan_subtype: 'Check out' }
@@ -173,18 +206,22 @@ function makePlansArray() {
 			description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Natus consequuntur deserunt commodi, nobis qui inventore corrupti iusto aliquid debitis unde non.Adipisci, pariatur.Molestiae, libero esse hic adipisci autem neque ?',
 			trip_id: 1,
 			city_name: 'Barcelona',
-			utc_offset_minutes: 180
+			utc_offset_minutes: 180,
+			formatted_address: '',
+			international_phone_number: '',
+			website: ''
 		},
 		{
 			id: 4,
-			plan_type: 'Restaurant',
-			plan_name: 'Good Food',
+			plan_type: 'Car Rental',
+			plan_name: 'Autoeuropa',
 			plan_place_id: '',
-			start_date: '2019-04-05T20:00:00.000Z',
-			description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Natus consequuntur deserunt commodi, nobis qui inventore corrupti iusto aliquid debitis unde non.Adipisci, pariatur.Molestiae, libero esse hic adipisci autem neque ?',
+			start_date: '2019-04-05T12:00:00.000Z',
+			end_date: '2019-04-08T20:00:00.000Z',
+			description: '',
 			trip_id: 1,
-			city_name: 'Barcelona',
-			utc_offset_minutes: 180
+			city_name: 'Florence',
+			utc_offset_minutes: 180,
 		}
 	];
 }
@@ -206,6 +243,29 @@ function makePlanDetailsArray() {
 			id: 3,
 			plan_subtype: 'Check out',
 			plan_id: 2
+		},
+		{
+			id: 4,
+			plan_subtype: 'Pick up',
+			plan_id: 4,
+			from_name: 'Sicily By Car - AutoEuropa',
+			from_place_id: 'ChIJCwTjKaxWKhMRoWTZJO1xK3Y',
+			from_utc_offset_minutes: 120,
+			from_formatted_address: 'R, Borgo Ognissanti, 100, 50123 Firenze FI, Italy',
+			from_international_phone_number: '+39 055 213333',
+			from_website: 'http://www.sbc.it/'
+		},
+		{
+			id: 5,
+			plan_subtype: 'Drop off',
+			plan_id: 4,
+			to_name: 'Sicily By Car - AutoEuropa',
+			to_place_id: 'ChIJCwTjKaxWKhMRoWTZJO1xK3Y',
+			to_utc_offset_minutes: 120,
+			to_formatted_address: 'R, Borgo Ognissanti, 100, 50123 Firenze FI, Italy',
+			to_international_phone_number: '+39 055 213333',
+			to_website: 'http://www.sbc.it/'
+
 		}
 	];
 }
@@ -321,6 +381,11 @@ function seedTripsTables(db, users, trips, destCities, plans, planDetails) {
 	trips = trips.map(trip => {
 		delete trip.dest_cities;
 		return trip;
+	});
+	destCities = destCities.map(dc => {
+		dc = { ...dc.viewport, ...dc };
+		delete dc.viewport;
+		return dc;
 	});
 	plans = plans.map(plan => {
 		delete plan.plan_details;

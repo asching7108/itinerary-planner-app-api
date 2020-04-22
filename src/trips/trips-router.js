@@ -138,6 +138,9 @@ TripsRouter
 			plan_place_id, 
       city_name,
 			utc_offset_minutes,
+			formatted_address,
+			international_phone_number,
+			website,
 			plan_details
 		} = req.body;
 		let newPlan = { 
@@ -160,6 +163,9 @@ TripsRouter
 			end_date,
 			description,
 			plan_place_id,
+			formatted_address,
+			international_phone_number,
+			website,
 			trip_id: req.params.trip_id,
 			...newPlan
 		};
@@ -222,6 +228,9 @@ TripsRouter
 			description, 
 			city_name,
 			utc_offset_minutes,
+			formatted_address,
+			international_phone_number,
+			website,
 			plan_details
 		} = req.body;
 		const planToUpdate = { 
@@ -233,6 +242,9 @@ TripsRouter
 			description, 
 			city_name,
 			utc_offset_minutes,
+			formatted_address,
+			international_phone_number,
+			website,
 			plan_details
 		 };
 
