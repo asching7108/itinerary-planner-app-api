@@ -1,10 +1,12 @@
 CREATE TYPE PLAN_TYPE AS ENUM (
 	'Flight',
-	'Transportation',
 	'Lodging',
 	'Car Rental',
 	'Restaurant',
-	'Activity'
+	'Activity',
+	'Sightseeing',
+	'Meeting',
+	'Transportation'
 );
 
 CREATE TYPE PLAN_SUBTYPE AS ENUM (
@@ -20,7 +22,7 @@ CREATE TABLE trip_plans (
 	plan_name TEXT NOT NULL,
 	plan_place_id TEXT,
 	start_date TIMESTAMP NOT NULL,
-	end_date TIMESTAMP,
+	end_date TIMESTAMP NOT NULL,
 	description TEXT,
 	trip_id INTEGER
 		REFERENCES trips(id) ON DELETE CASCADE NOT NULL,
@@ -42,12 +44,16 @@ CREATE TABLE plan_details (
 	from_formatted_address TEXT,
 	from_international_phone_number TEXT,
 	from_website TEXT,
+	from_terminal TEXT,
+	from_gate TEXT,
 	to_name TEXT,
 	to_place_id TEXT,
 	to_utc_offset_minutes INTEGER,
 	to_formatted_address TEXT,
 	to_international_phone_number TEXT,
 	to_website TEXT,
+	to_terminal TEXT,
+	to_gate TEXT,
 	plan_id INTEGER
 		REFERENCES trip_plans(id) ON DELETE CASCADE NOT NULL
 );
