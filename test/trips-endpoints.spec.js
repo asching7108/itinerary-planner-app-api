@@ -559,7 +559,7 @@ describe('Trips Endpoints', () => {
 		const requiredFields = [
 			'plan_type', 
 			'plan_name', 
-			'start_date',  
+			'start_date',
 			'city_name',
 			'utc_offset_minutes'
 		];

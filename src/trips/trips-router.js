@@ -128,15 +128,15 @@ TripsRouter
 		.catch(next);
 	})
 
-  .post(jsonBodyParser, (req, res, next) => {
+	.post(jsonBodyParser, (req, res, next) => {
 		const {
 			plan_type, 
 			plan_name, 
 			start_date, 
 			end_date, 
-			description,  
+			description,	
 			plan_place_id, 
-      city_name,
+			city_name,
 			utc_offset_minutes,
 			formatted_address,
 			international_phone_number,
@@ -188,7 +188,7 @@ TripsRouter
 					});
 			})
 			.catch(next);
-  })
+	})
 
 TripsRouter
 	.route('/:trip_id/plans/:plan_id')

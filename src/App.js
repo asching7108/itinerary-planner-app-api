@@ -16,13 +16,15 @@ const morganOption = (NODE_ENV === 'production')
 
 app.use(morgan(morganOption));
 app.use(helmet());
-app.use(cors({
-	origin: CLIENT_ORIGIN
-}));
+app.use(cors({ origin: CLIENT_ORIGIN }));
 
 app.use('/api/auth', AuthRouter);
 app.use('/api/trips', TripsRouter);
 app.use('/api/users', UsersRouter);
+
+app.get('/', (req, res) => {
+	res.send('Hello, world!');
+});
 
 /* error handler */
 app.use((error, req, res, next) => {
