@@ -178,18 +178,10 @@ const TripsService = {
 	},
 
 	serializeTrips(trips, destCitiesMap) {
-		const allTrips = trips.map(trip => {
+		return trips.map(trip => {
 			const destCities = destCitiesMap.get(trip.id);
 			return this.serializeTrip(trip, destCities);
 		});
-		
-		const upcomingTrips = allTrips.filter(trip => 
-			moment(trip.end_date).diff(moment().startOf('day')) >= 0
-		);
-		const pastTrips = allTrips.filter(trip => 
-			moment(trip.end_date).diff(moment().startOf('day')) < 0
-		);
-		return { upcomingTrips, pastTrips: pastTrips.reverse() };
 	},
 
 	serializeTrip(trip, destCities) {		

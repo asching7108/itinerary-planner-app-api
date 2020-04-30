@@ -34,7 +34,7 @@ const UsersService = {
 		}
 		return null;
 	},
-
+	
 	insertUser(db, newUser) {
 		return db
 			.insert(newUser)
