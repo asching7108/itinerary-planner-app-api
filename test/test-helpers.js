@@ -222,6 +222,26 @@ function makePlansArray() {
 			trip_id: 1,
 			city_name: 'Florence',
 			utc_offset_minutes: 180,
+			plan_details: [
+				{
+					plan_subtype: 'Pick up',
+					from_name: 'Sicily By Car - AutoEuropa',
+					from_place_id: 'ChIJCwTjKaxWKhMRoWTZJO1xK3Y',
+					from_utc_offset_minutes: 120,
+					from_formatted_address: 'R, Borgo Ognissanti, 100, 50123 Firenze FI, Italy',
+					from_international_phone_number: '+39 055 213333',
+					from_website: 'http://www.sbc.it/'
+				},
+				{
+					plan_subtype: 'Drop off',
+					to_name: 'Sicily By Car - AutoEuropa',
+					to_place_id: 'ChIJCwTjKaxWKhMRoWTZJO1xK3Y',
+					to_utc_offset_minutes: 120,
+					to_formatted_address: 'R, Borgo Ognissanti, 100, 50123 Firenze FI, Italy',
+					to_international_phone_number: '+39 055 213333',
+					to_website: 'http://www.sbc.it/'
+				}
+			]
 		}
 	];
 }
@@ -231,7 +251,17 @@ function makePlanDetailsArray() {
 		{
 			id: 1,
 			from_name: 'TPE',
+			from_formatted_address: '',
+			from_international_phone_number: '',
+			from_website: '',
+			from_terminal: '',
+			from_gate: '',
 			to_name: 'BCN',
+			to_formatted_address: '',
+			to_international_phone_number: '',
+			to_website: '',
+			to_terminal: '',
+			to_gate: '',
 			plan_id: 1
 		},
 		{
@@ -265,7 +295,6 @@ function makePlanDetailsArray() {
 			to_formatted_address: 'R, Borgo Ognissanti, 100, 50123 Firenze FI, Italy',
 			to_international_phone_number: '+39 055 213333',
 			to_website: 'http://www.sbc.it/'
-
 		}
 	];
 }
@@ -336,6 +365,29 @@ function makeExpectedPlan(plan, planDetails) {
 			comparable_date: plan.start_date
 		});
 	}
+
+	const propertiesToFill = [
+		'formatted_address',
+		'international_phone_number',
+		'website',
+		'from_name', 
+		'from_formatted_address',
+		'from_international_phone_number',
+		'from_website',
+		'from_terminal',
+		'from_gate',
+		'to_name',
+		'to_formatted_address',
+		'to_international_phone_number',
+		'to_website',
+		'to_terminal',
+		'to_gate'
+	];
+	expectedPlans.forEach(p => {
+		propertiesToFill.forEach(ptf => {
+			if (!p[ptf]) { p[ptf] = ''; }
+		})
+	})
 
 	return expectedPlans;
 }
