@@ -91,6 +91,14 @@ describe('Trips Endpoints', () => {
 				)
 			)
 
+			it(`responds with 404 when trip id is not valid`, () => {
+				const tripId = 'not-valid';
+				return supertest(app)
+					.get(`/api/trips/${tripId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Invalid trip id` });
+			})
+
 			it('responds with 200 and the specified trip', () => {
 				const tripId = 2;				
 				const expectedTrip = helpers.makeExpectedTrip(
@@ -287,6 +295,14 @@ describe('Trips Endpoints', () => {
 				)
 			)
 
+			it(`responds with 404 when trip id is not valid`, () => {
+				const tripId = 'not-valid';
+				return supertest(app)
+					.delete(`/api/trips/${tripId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Invalid trip id` });
+			})
+
 			it('deletes the specified trip, responding with 204', () => {
 				const tripId = 2;				
 				const expectedTrips = helpers.makeExpectedTrips(
@@ -315,7 +331,7 @@ describe('Trips Endpoints', () => {
 			it(`responds with 404 when trip doesn't exist`, () => {
 				const tripId = 123456;
 				return supertest(app)
-					.delete(`/api/trips/${tripId}`)
+					.patch(`/api/trips/${tripId}`)
 					.set('Authorization', helpers.makeAuthHeader(testUser))
 					.expect(404, { error: `Trip doesn't exist` });
 			})
@@ -332,6 +348,14 @@ describe('Trips Endpoints', () => {
 					testPlanDetails
 				)
 			)
+
+			it(`responds with 404 when trip id is not valid`, () => {
+				const tripId = 'not-valid';
+				return supertest(app)
+					.patch(`/api/trips/${tripId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Invalid trip id` });
+			})
 
 			it('updates the specified trip, responding with 200 and the updated trip', () => {
 				const tripId = 2;				
@@ -466,6 +490,14 @@ describe('Trips Endpoints', () => {
 				)
 			)
 
+			it(`responds with 404 when trip id is not valid`, () => {
+				const tripId = 'not-valid';
+				return supertest(app)
+					.get(`/api/trips/${tripId}/plans`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Invalid trip id` });
+			})
+
 			it('responds with 200 and the specified plans', () => {
 				const tripId = 1;
 				const expectedPlans = helpers.makeExpectedPlans(
@@ -528,6 +560,24 @@ describe('Trips Endpoints', () => {
 					testPlanDetails
 				)
 			)
+			
+			it(`responds with 404 when trip id is not valid`, () => {
+				const tripId = 'not-valid';
+				const planId = 123456;
+				return supertest(app)
+					.get(`/api/trips/${tripId}/plans/${planId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Invalid trip id` });
+			})
+
+			it(`responds with 404 when plan id is not valid`, () => {
+				const tripId = 1;
+				const planId = 'not-valid';
+				return supertest(app)
+					.get(`/api/trips/${tripId}/plans/${planId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Invalid plan id` });
+			})
 
 			it('responds with 200 and the specified plan', () => {
 				const testPlan = testPlans[0];
@@ -585,6 +635,22 @@ describe('Trips Endpoints', () => {
 						error: `Missing '${field}' in request body`,
 					})
 			})
+		})
+
+		it(`responds with 404 when trip doesn't exist`, () => {
+			const tripId = 123456;
+			return supertest(app)
+				.get(`/api/trips/${tripId}/plans`)
+				.set('Authorization', helpers.makeAuthHeader(testUser))
+				.expect(404, { error: `Trip doesn't exist` });
+		})
+
+		it(`responds with 404 when trip id is not valid`, () => {
+			const tripId = 'not-valid';
+			return supertest(app)
+				.post(`/api/trips/${tripId}/plans`)
+				.set('Authorization', helpers.makeAuthHeader(testUser))
+				.expect(404, { error: `Invalid trip id` });
 		})
 
 		it('creates a plan, responding with 201 and the new plan', () => {
@@ -757,6 +823,24 @@ describe('Trips Endpoints', () => {
 				)
 			)
 
+			it(`responds with 404 when trip id is not valid`, () => {
+				const tripId = 'not-valid';
+				const planId = 123456;
+				return supertest(app)
+					.delete(`/api/trips/${tripId}/plans/${planId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Invalid trip id` });
+			})
+
+			it(`responds with 404 when plan id is not valid`, () => {
+				const tripId = 1;
+				const planId = 'not-valid';
+				return supertest(app)
+					.delete(`/api/trips/${tripId}/plans/${planId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Invalid plan id` });
+			})
+
 			it('deletes the specified plan, responding with 204', () => {
 				const testPlan = testPlans[0];
 				const expectedPlans = helpers.makeExpectedPlans(
@@ -835,6 +919,24 @@ describe('Trips Endpoints', () => {
 					.expect(400, {
 						error: `Request body must contain at least one field to update`
 					});
+			})
+
+			it(`responds with 404 when trip id is not valid`, () => {
+				const tripId = 'not-valid';
+				const planId = 123456;
+				return supertest(app)
+					.patch(`/api/trips/${tripId}/plans/${planId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Invalid trip id` });
+			})
+
+			it(`responds with 404 when plan id is not valid`, () => {
+				const tripId = 1;
+				const planId = 'not-valid';
+				return supertest(app)
+					.patch(`/api/trips/${tripId}/plans/${planId}`)
+					.set('Authorization', helpers.makeAuthHeader(testUser))
+					.expect(404, { error: `Invalid plan id` });
 			})
 
 			it('updates the specified plan, responding with 200 and the updated plan', () => {

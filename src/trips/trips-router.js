@@ -268,6 +268,12 @@ TripsRouter
 
 async function checkTripExists(req, res, next) {
 	try {
+		if (!Number(req.params.trip_id)) {
+			return res.status(404).json({
+				error: `Invalid trip id`
+			});
+		}
+
 		const trip = await TripsService.getTripById(
 			req.app.get('db'),
 			req.params.trip_id
@@ -295,6 +301,12 @@ async function checkTripExists(req, res, next) {
 
 async function checkPlanExists(req, res, next) {
 	try {
+		if (!Number(req.params.plan_id)) {
+			return res.status(404).json({
+				error: `Invalid plan id`
+			});
+		}
+
 		const plans = await PlansService.getPlanById(
 			req.app.get('db'),
 			req.params.plan_id

@@ -57,6 +57,26 @@ timezone = 'UTC'
 
 When ready for deployment, add a new Heroku application with `heroku create`. This will make a new git remote called "heroku" and you can then `npm run deploy` which will push to this remote's master branch.
 
+## Features
+
+* Authentication with JWT
+* CRUD for trips (multiple destinations supported)
+* CRUD for plans for trip (different types of plans supported)
+
+## Sample Client Screenshots
+
+Homepage / My Trips:
+
+![Homepage](src/images/tlp.png)
+
+Trip Itinerary: 
+
+![Trip Itinerary](src/images/tp.png)
+
+Plan Details:
+
+![Plan Details](src/images/pp.png)
+
 ## Technologies
 
 * Express
