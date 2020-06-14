@@ -22,8 +22,8 @@ app.use('/api/auth', AuthRouter);
 app.use('/api/trips', TripsRouter);
 app.use('/api/users', UsersRouter);
 
-app.get('/', (req, res) => {
-	res.send('Hello, world!');
+app.get('/api', (req, res) => {
+	res.json('Hello, world!');
 });
 
 /* error handler */
