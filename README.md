@@ -4,6 +4,10 @@ Vamos is a full stack web application for managing travel itineraries. Users can
 
 This is the server-side code for the application with Express and PostgreSQL.
 
+## Live
+
+- [Live Page](https://vamos-itinerary-planner.now.sh/)
+
 ## Client
 
 - [Client Repo](https://github.com/asching7108/itinerary-planner-app/)
