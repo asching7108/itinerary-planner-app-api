@@ -22,7 +22,7 @@ app.use('/api/auth', AuthRouter);
 app.use('/api/trips', TripsRouter);
 app.use('/api/users', UsersRouter);
 
-app.get('/api', (req, res) => {
+app.get('/', (req, res) => {
 	res.json('Hello, world!');
 });
 
